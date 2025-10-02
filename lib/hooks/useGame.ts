@@ -43,7 +43,8 @@ export function useGame(gameId: string | null) {
     try {
       await addPoint(gameId, playerId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add point');
+      // Re-throw error so it can be caught in the component
+      throw err;
     }
   };
 

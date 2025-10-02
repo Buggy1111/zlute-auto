@@ -41,25 +41,25 @@ export default function GamePage() {
   const handleAddPoint = async (playerId: string) => {
     setAddingPoint(playerId);
 
-    // Show celebration
-    setShowCelebration(true);
-    setTimeout(() => setShowCelebration(false), 2000);
-
-    // Create massive confetti explosion
-    const newConfetti = Array.from({ length: 40 }, (_, i) => ({
-      id: Date.now() + i,
-      x: Math.random() * 100,
-      y: Math.random() * 50,
-    }));
-    setConfetti((prev) => [...prev, ...newConfetti]);
-
-    // Clean up confetti
-    setTimeout(() => {
-      setConfetti((prev) => prev.filter((c) => !newConfetti.find((n) => n.id === c.id)));
-    }, 3000);
-
     try {
       await addPoint(playerId);
+
+      // Show celebration only on success
+      setShowCelebration(true);
+      setTimeout(() => setShowCelebration(false), 2000);
+
+      // Create massive confetti explosion
+      const newConfetti = Array.from({ length: 40 }, (_, i) => ({
+        id: Date.now() + i,
+        x: Math.random() * 100,
+        y: Math.random() * 50,
+      }));
+      setConfetti((prev) => [...prev, ...newConfetti]);
+
+      // Clean up confetti
+      setTimeout(() => {
+        setConfetti((prev) => prev.filter((c) => !newConfetti.find((n) => n.id === c.id)));
+      }, 3000);
 
       // Play point sound
       playSound('point');
