@@ -20,7 +20,7 @@ export default function GamePage() {
   const gameId = params.gameId as string;
   const { game, events, loading, error, addPoint } = useGame(gameId);
   const [addingPoint, setAddingPoint] = useState<string | null>(null);
-  const [confetti, setConfetti] = useState<Array<{ id: number; x: number; y: number }>>([]);
+  const [confetti, setConfetti] = useState<Array<{ id: number; x: number; y: number; vx: number; vy: number; rotation: number; rotationSpeed: number }>>([]);
   const [mounted, setMounted] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showCarDrive, setShowCarDrive] = useState(false);
@@ -49,11 +49,15 @@ export default function GamePage() {
       setShowCelebration(true);
       setTimeout(() => setShowCelebration(false), 2000);
 
-      // Create massive confetti explosion
+      // Create massive confetti explosion with physics
       const newConfetti = Array.from({ length: 40 }, (_, i) => ({
         id: Date.now() + i,
-        x: Math.random() * 100,
-        y: Math.random() * 50,
+        x: 40 + Math.random() * 20, // Start from center
+        y: 30 + Math.random() * 20,
+        vx: (Math.random() - 0.5) * 60, // Horizontal velocity
+        vy: -30 - Math.random() * 20, // Initial upward velocity
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 10,
       }));
       setConfetti((prev) => [...prev, ...newConfetti]);
 
@@ -246,7 +250,7 @@ export default function GamePage() {
         </div>
       )}
 
-      {/* Enhanced confetti particles */}
+      {/* Enhanced confetti particles with physics */}
       {confetti.map((c) => (
         <div
           key={c.id}
@@ -254,12 +258,26 @@ export default function GamePage() {
           style={{
             left: `${c.x}%`,
             top: `${c.y}%`,
-            width: `${8 + Math.random() * 8}px`,
-            height: `${8 + Math.random() * 8}px`,
-            background: ['#FFD700', '#FFA500', '#FFEB3B', '#F59E0B', '#FFB800', '#FFDB58'][Math.floor(Math.random() * 6)],
-            animation: 'confettiFall 3s ease-out forwards',
+            width: `${8 + (c.id % 8)}px`,
+            height: `${8 + (c.id % 8)}px`,
+            background: ['#FFD700', '#FFA500', '#FFEB3B', '#F59E0B', '#FFB800', '#FFDB58'][c.id % 6],
+            animation: `confettiPhysics-${c.id} 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`,
+            transformOrigin: 'center center',
           }}
-        />
+        >
+          <style dangerouslySetInnerHTML={{ __html: `
+            @keyframes confettiPhysics-${c.id} {
+              0% {
+                transform: translate(0, 0) rotate(${c.rotation}deg);
+                opacity: 1;
+              }
+              100% {
+                transform: translate(${c.vx}vw, ${100 + Math.abs(c.vy)}vh) rotate(${c.rotation + c.rotationSpeed * 360}deg);
+                opacity: 0;
+              }
+            }
+          `}} />
+        </div>
       ))}
 
       {/* Floating background elements */}
