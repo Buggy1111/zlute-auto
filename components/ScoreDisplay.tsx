@@ -124,7 +124,7 @@ export default function ScoreDisplay({ game }: ScoreDisplayProps) {
               key={i}
               className="absolute w-2 h-2 rounded-full"
               style={{
-                background: ['#FFD700', '#FFA500', '#FF6B6B', '#4ECDC4'][i % 4],
+                background: ['#FFD700', '#FFA500', '#FFEB3B', '#FFB800'][i % 4],
                 left: `${10 + i * 12}%`,
                 animation: `float ${2 + (i % 3)}s ease-in-out infinite ${i * 0.2}s`,
                 opacity: 0.3,

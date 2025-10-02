@@ -55,11 +55,15 @@ export default function PlayerButton({
       />
 
       {/* Main button */}
-      <div
-        className="relative h-full rounded-3xl border-4 p-6 transition-all transform group-hover:scale-105 group-active:scale-98 shadow-2xl group-hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)] backdrop-blur-xl overflow-hidden"
+      <motion.div
+        className="relative h-full rounded-3xl border-2 p-6 shadow-2xl backdrop-blur-xl overflow-hidden"
         style={{
-          background: `linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)`,
+          background: `linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)`,
           borderColor: player.color,
+          boxShadow: `0 8px 32px rgba(0, 0, 0, 0.08), 0 0 0 1px ${player.color}20, inset 0 1px 0 rgba(255,255,255,0.9)`,
+        }}
+        whileHover={{
+          boxShadow: `0 20px 60px rgba(0, 0, 0, 0.12), 0 0 0 2px ${player.color}40, inset 0 1px 0 rgba(255,255,255,1)`,
         }}
       >
         {/* Animated gradient overlay */}
@@ -95,16 +99,20 @@ export default function PlayerButton({
 
           {/* Score display */}
           <div className="text-right">
-            <div
+            <motion.div
               id={`player-${player.id}-score`}
-              className="text-6xl font-black transition-all duration-300 group-hover:scale-110"
+              className="text-6xl font-black"
               style={{
                 color: player.color,
                 textShadow: `0 0 20px ${player.color}40`,
               }}
+              key={player.score}
+              initial={{ scale: 1 }}
+              animate={{ scale: [1, 1.3, 1] }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
             >
               {player.score}
-            </div>
+            </motion.div>
             <div className="text-xs text-gray-500 font-bold mt-1">
               {player.score === 1 ? 'BOD' : player.score < 5 ? 'BODY' : 'BODŮ'}
             </div>
@@ -140,7 +148,7 @@ export default function PlayerButton({
           className="absolute bottom-2 left-2 w-6 h-6 rounded-full opacity-10"
           style={{ backgroundColor: player.color }}
         />
-      </div>
+      </motion.div>
     </motion.button>
   );
 }
