@@ -8,6 +8,7 @@ import ScoreDisplay from '@/components/ScoreDisplay';
 import GameHistory from '@/components/GameHistory';
 import Achievement from '@/components/Achievement';
 import GameMenu from '@/components/GameMenu';
+import Toast from '@/components/Toast';
 import { useState, useEffect } from 'react';
 import { playSound } from '@/lib/sounds';
 
@@ -22,6 +23,7 @@ export default function GamePage() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [showCarDrive, setShowCarDrive] = useState(false);
   const [lastAchievement, setLastAchievement] = useState<{ score: number; playerName: string } | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -78,9 +80,16 @@ export default function GamePage() {
       if ('vibrate' in navigator) {
         navigator.vibrate([100, 50, 100, 50, 200]);
       }
-    } catch {
+    } catch (err) {
       // Play error sound
       playSound('error');
+
+      // Show error toast instead of crashing
+      const errorMessage = err instanceof Error ? err.message : 'Něco se pokazilo';
+      setToastMessage({
+        message: errorMessage.includes('rychle') ? 'Příliš rychle! Počkej chvilku 😊' : errorMessage,
+        type: 'error'
+      });
     } finally {
       setAddingPoint(null);
     }
@@ -188,6 +197,15 @@ export default function GamePage() {
     <div className="min-h-screen p-4 relative overflow-hidden">
       {/* Game Menu */}
       <GameMenu onNewGame={handleNewGame} onShare={handleShare} />
+
+      {/* Toast notifications */}
+      {toastMessage && (
+        <Toast
+          message={toastMessage.message}
+          type={toastMessage.type}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
 
       {/* Achievement popup */}
       {lastAchievement && (
