@@ -180,7 +180,7 @@ export default function GamePage() {
     );
   }
 
-  const players = Object.values(game.players);
+  const players = Object.values(game.players).sort((a, b) => b.score - a.score);
 
   return (
     <div className="min-h-screen p-4 relative overflow-hidden">
