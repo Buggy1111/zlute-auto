@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface AchievementProps {
   score: number;
@@ -36,16 +37,37 @@ export default function Achievement({ score, playerName }: AchievementProps) {
     }
   }, [score]);
 
-  if (!show || !achievement) return null;
-
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-[100] pointer-events-none">
-      <div className="animate-[bounce-in_0.5s_ease-out] pointer-events-auto">
-        <div className="glass-strong rounded-3xl p-8 border-4 border-yellow-primary shadow-[0_0_80px_rgba(255,215,0,0.8)] max-w-sm mx-4">
+    <AnimatePresence>
+      {show && achievement && (
+        <div className="fixed inset-0 flex items-center justify-center z-[100] pointer-events-none">
+          <motion.div
+            initial={{ scale: 0, rotate: -180, opacity: 0 }}
+            animate={{ scale: 1, rotate: 0, opacity: 1 }}
+            exit={{ scale: 0, rotate: 180, opacity: 0 }}
+            transition={{
+              type: "spring",
+              stiffness: 200,
+              damping: 15,
+            }}
+            className="pointer-events-auto"
+          >
+            <div className="glass-strong rounded-3xl p-8 border-4 border-yellow-primary shadow-[0_0_80px_rgba(255,215,0,0.8)] max-w-sm mx-4">
           {/* Emoji */}
-          <div className="text-8xl text-center mb-4 animate-bounce">
+          <motion.div
+            className="text-8xl text-center mb-4"
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 10, -10, 0],
+            }}
+            transition={{
+              duration: 0.6,
+              repeat: Infinity,
+              repeatDelay: 0.3,
+            }}
+          >
             {achievement.emoji}
-          </div>
+          </motion.div>
 
           {/* Title */}
           <h2 className="text-4xl font-black text-center gradient-text mb-2">
@@ -75,7 +97,9 @@ export default function Achievement({ score, playerName }: AchievementProps) {
             ))}
           </div>
         </div>
-      </div>
-    </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 }

@@ -2,6 +2,7 @@
 
 import { Player } from '@/types/game';
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 
 interface PlayerButtonProps {
   player: Player;
@@ -36,13 +37,16 @@ export default function PlayerButton({
   };
 
   return (
-    <button
+    <motion.button
       onClick={handleClick}
       disabled={disabled}
       aria-label={`Přidat bod pro hráče ${player.name}. Aktuální skóre: ${player.score} ${player.score === 1 ? 'bod' : player.score < 5 ? 'body' : 'bodů'}`}
       aria-describedby={`player-${player.id}-score`}
       className="relative w-full group overflow-hidden"
       style={{ minHeight: '140px' }}
+      whileHover={{ scale: 1.02, y: -4 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 400, damping: 17 }}
     >
       {/* Glow effect */}
       <div
@@ -137,6 +141,6 @@ export default function PlayerButton({
           style={{ backgroundColor: player.color }}
         />
       </div>
-    </button>
+    </motion.button>
   );
 }

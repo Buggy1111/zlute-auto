@@ -9,6 +9,7 @@ import GameHistory from '@/components/GameHistory';
 import Achievement from '@/components/Achievement';
 import GameMenu from '@/components/GameMenu';
 import Toast from '@/components/Toast';
+import FloatingParticles from '@/components/FloatingParticles';
 import { useState, useEffect } from 'react';
 import { playSound } from '@/lib/sounds';
 
@@ -195,6 +196,9 @@ export default function GamePage() {
 
   return (
     <div className="min-h-screen p-4 relative overflow-hidden">
+      {/* Floating Particles Background */}
+      <FloatingParticles />
+
       {/* Game Menu */}
       <GameMenu onNewGame={handleNewGame} onShare={handleShare} />
 
