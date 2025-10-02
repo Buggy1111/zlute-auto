@@ -25,11 +25,8 @@ const PLAYER_COLORS = [
 
 export async function createGame(playerNames: string[]): Promise<string> {
   try {
-    console.log('🎮 Creating game with players:', playerNames);
-
     const gameRef = doc(collection(db, 'games'));
     const gameId = gameRef.id;
-    console.log('📝 Generated game ID:', gameId);
 
     const players: Record<string, Player> = {};
     playerNames.forEach((name, index) => {
@@ -48,9 +45,7 @@ export async function createGame(playerNames: string[]): Promise<string> {
       players,
     };
 
-    console.log('💾 Writing game to Firestore...', game);
     await setDoc(gameRef, game);
-    console.log('✅ Game created successfully!');
 
     return gameId;
   } catch (error: unknown) {

@@ -13,6 +13,7 @@ import FloatingParticles from '@/components/FloatingParticles';
 import GradientMesh from '@/components/GradientMesh';
 import { useState, useEffect } from 'react';
 import { playSound } from '@/lib/sounds';
+import { motion } from 'framer-motion';
 
 export default function GamePage() {
   const params = useParams();
@@ -20,23 +21,12 @@ export default function GamePage() {
   const gameId = params.gameId as string;
   const { game, events, loading, error, addPoint } = useGame(gameId);
   const [addingPoint, setAddingPoint] = useState<string | null>(null);
-  const [confetti, setConfetti] = useState<Array<{ id: number; x: number; y: number; vx: number; vy: number; rotation: number; rotationSpeed: number }>>([]);
   const [mounted, setMounted] = useState(false);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [showCarDrive, setShowCarDrive] = useState(false);
   const [lastAchievement, setLastAchievement] = useState<{ score: number; playerName: string } | null>(null);
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
     setMounted(true);
-
-    // Random car driving by
-    const carInterval = setInterval(() => {
-      setShowCarDrive(true);
-      setTimeout(() => setShowCarDrive(false), 3000);
-    }, 20000);
-
-    return () => clearInterval(carInterval);
   }, []);
 
   const handleAddPoint = async (playerId: string) => {
@@ -44,27 +34,6 @@ export default function GamePage() {
 
     try {
       await addPoint(playerId);
-
-      // Show celebration only on success
-      setShowCelebration(true);
-      setTimeout(() => setShowCelebration(false), 2000);
-
-      // Create massive confetti explosion with physics
-      const newConfetti = Array.from({ length: 40 }, (_, i) => ({
-        id: Date.now() + i,
-        x: 40 + Math.random() * 20, // Start from center
-        y: 30 + Math.random() * 20,
-        vx: (Math.random() - 0.5) * 60, // Horizontal velocity
-        vy: -30 - Math.random() * 20, // Initial upward velocity
-        rotation: Math.random() * 360,
-        rotationSpeed: (Math.random() - 0.5) * 10,
-      }));
-      setConfetti((prev) => [...prev, ...newConfetti]);
-
-      // Clean up confetti
-      setTimeout(() => {
-        setConfetti((prev) => prev.filter((c) => !newConfetti.find((n) => n.id === c.id)));
-      }, 3000);
 
       // Play point sound
       playSound('point');
@@ -147,7 +116,7 @@ export default function GamePage() {
           <div className="relative inline-block mb-6">
             <div className="absolute inset-0 blur-3xl bg-yellow-primary opacity-50 animate-pulse" />
             <div className="absolute inset-0 blur-2xl bg-yellow-secondary opacity-30 animate-glow" />
-            <div className="text-9xl animate-float relative z-10 drop-shadow-[0_0_40px_rgba(255,215,0,0.9)]">
+            <div className="text-9xl animate-float relative z-10 drop-shadow-[0_0_40px_rgba(255,215,0,0.9)]" style={{ filter: 'sepia(100%) saturate(400%) brightness(100%) hue-rotate(-10deg)' }}>
               🚗
             </div>
           </div>
@@ -224,62 +193,6 @@ export default function GamePage() {
         <Achievement score={lastAchievement.score} playerName={lastAchievement.playerName} />
       )}
 
-      {/* Driving Porsche animation */}
-      {showCarDrive && (
-        <div className="fixed top-1/4 left-0 w-full pointer-events-none z-50">
-          <div className="animate-[car-drive_3s_linear]">
-            <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-yellow-primary/40 shadow-[0_0_50px_rgba(255,215,0,0.8)] bg-gradient-to-br from-yellow-light/30 to-transparent backdrop-blur-sm">
-              <Image
-                src="/porsche.webp"
-                alt="Driving Porsche"
-                width={160}
-                height={160}
-                className="w-full h-full object-cover scale-110"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Celebration overlay */}
-      {showCelebration && (
-        <div className="fixed inset-0 pointer-events-none z-40 flex items-center justify-center">
-          <div className="text-9xl animate-[bounce-in_0.5s_ease-out]">
-            ⭐ 🎉 ⭐
-          </div>
-        </div>
-      )}
-
-      {/* Enhanced confetti particles with physics */}
-      {confetti.map((c) => (
-        <div
-          key={c.id}
-          className="fixed rounded-full pointer-events-none z-50 shadow-lg"
-          style={{
-            left: `${c.x}%`,
-            top: `${c.y}%`,
-            width: `${8 + (c.id % 8)}px`,
-            height: `${8 + (c.id % 8)}px`,
-            background: ['#FFD700', '#FFA500', '#FFEB3B', '#F59E0B', '#FFB800', '#FFDB58'][c.id % 6],
-            animation: `confettiPhysics-${c.id} 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`,
-            transformOrigin: 'center center',
-          }}
-        >
-          <style dangerouslySetInnerHTML={{ __html: `
-            @keyframes confettiPhysics-${c.id} {
-              0% {
-                transform: translate(0, 0) rotate(${c.rotation}deg);
-                opacity: 1;
-              }
-              100% {
-                transform: translate(${c.vx}vw, ${100 + Math.abs(c.vy)}vh) rotate(${c.rotation + c.rotationSpeed * 360}deg);
-                opacity: 0;
-              }
-            }
-          `}} />
-        </div>
-      ))}
-
       {/* Floating background elements */}
       {mounted && (
         <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-10">
@@ -300,14 +213,30 @@ export default function GamePage() {
       )}
 
       <div className={`max-w-2xl mx-auto transition-all duration-1000 relative z-10 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
-        {/* Premium Header */}
-        <div className="text-center mb-8 relative">
+        {/* Premium Header with 3D depth */}
+        <div className="text-center mb-8 relative" style={{ perspective: '1000px' }}>
           <div className="absolute inset-0 blur-3xl bg-yellow-primary/20 animate-pulse-scale" />
-          <div className="relative z-10">
+          <motion.div
+            className="relative z-10"
+            animate={{
+              rotateX: [0, 2, 0, -2, 0],
+              rotateY: [0, -2, 0, 2, 0],
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            style={{ transformStyle: 'preserve-3d' }}
+          >
             <div className="inline-block mb-4">
               <div className="relative">
                 <div className="absolute inset-0 blur-3xl bg-yellow-primary opacity-50 animate-glow" />
-                <div className="animate-float">
+                <motion.div
+                  className="animate-float"
+                  whileHover={{ scale: 1.1, rotateZ: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
                   <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-yellow-primary/30 shadow-[0_0_60px_rgba(255,215,0,0.6)] bg-gradient-to-br from-yellow-light/20 to-transparent backdrop-blur-sm">
                     <Image
                       src="/porsche.webp"
@@ -316,20 +245,45 @@ export default function GamePage() {
                       height={128}
                       priority
                       className="w-full h-full object-cover scale-110"
+                      style={{
+                        filter: 'sepia(100%) saturate(300%) brightness(90%) hue-rotate(-10deg)',
+                      }}
                     />
                   </div>
-                </div>
+                </motion.div>
               </div>
             </div>
-            <h1 className="text-6xl font-black gradient-text mb-3 drop-shadow-2xl">
+            <motion.h1
+              className="text-6xl font-black gradient-text mb-3"
+              style={{
+                textShadow: '0 10px 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 165, 0, 0.2)',
+                transform: 'translateZ(20px)',
+              }}
+              animate={{
+                textShadow: [
+                  '0 10px 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 165, 0, 0.2)',
+                  '0 15px 40px rgba(255, 215, 0, 0.5), 0 0 80px rgba(255, 165, 0, 0.4)',
+                  '0 10px 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 165, 0, 0.2)',
+                ],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            >
               Žluté Auto
-            </h1>
-            <div className="glass-strong rounded-2xl px-8 py-3 inline-block border-2 border-yellow-primary/40 shadow-[0_0_40px_rgba(255,215,0,0.2)]">
+            </motion.h1>
+            <motion.div
+              className="glass-strong rounded-2xl px-8 py-3 inline-block border-2 border-yellow-primary/40 shadow-[0_0_40px_rgba(255,215,0,0.2)]"
+              style={{ transform: 'translateZ(10px)' }}
+              whileHover={{ scale: 1.05, y: -2 }}
+            >
               <p className="text-gray-800 font-black text-lg">
                 👀 Klikni, když vidíš žluté auto! 👀
               </p>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
 
         {/* Score Display */}

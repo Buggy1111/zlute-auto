@@ -16,6 +16,7 @@ export default function PlayerButton({
   disabled = false,
 }: PlayerButtonProps) {
   const [ripples, setRipples] = useState<Array<{ x: number; y: number; id: number }>>([]);
+  const [showScore, setShowScore] = useState(false);
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (disabled) return;
@@ -32,6 +33,12 @@ export default function PlayerButton({
     setTimeout(() => {
       setRipples((prev) => prev.filter((r) => r.id !== id));
     }, 600);
+
+    // Show score temporarily
+    setShowScore(true);
+    setTimeout(() => {
+      setShowScore(false);
+    }, 2000); // Hide after 2 seconds
 
     onClick();
   };
@@ -58,7 +65,10 @@ export default function PlayerButton({
       <motion.div
         className="relative h-full rounded-3xl border-2 p-6 shadow-2xl backdrop-blur-xl overflow-hidden"
         style={{
-          background: `linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)`,
+          background: `linear-gradient(135deg,
+            rgba(255,255,255,0.95) 0%,
+            rgba(${parseInt(player.color.slice(1,3), 16)}, ${parseInt(player.color.slice(3,5), 16)}, ${parseInt(player.color.slice(5,7), 16)}, 0.08) 50%,
+            rgba(255,255,255,0.85) 100%)`,
           borderColor: player.color,
           boxShadow: `0 8px 32px rgba(0, 0, 0, 0.08), 0 0 0 1px ${player.color}20, inset 0 1px 0 rgba(255,255,255,0.9)`,
         }}
@@ -66,13 +76,20 @@ export default function PlayerButton({
           boxShadow: `0 20px 60px rgba(0, 0, 0, 0.12), 0 0 0 2px ${player.color}40, inset 0 1px 0 rgba(255,255,255,1)`,
         }}
       >
-        {/* Animated gradient overlay */}
-        <div
-          className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity"
+        {/* Animated gradient overlay - MORE VISIBLE */}
+        <motion.div
+          className="absolute inset-0 opacity-30"
           style={{
-            background: `linear-gradient(135deg, ${player.color} 0%, transparent 50%, ${player.color} 100%)`,
+            background: `linear-gradient(135deg, ${player.color}40 0%, transparent 30%, ${player.color}40 60%, transparent 100%)`,
             backgroundSize: '200% 200%',
-            animation: 'gradient-shift 3s ease infinite',
+          }}
+          animate={{
+            backgroundPosition: ['0% 0%', '100% 100%', '0% 0%'],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
           }}
         />
 
@@ -97,8 +114,16 @@ export default function PlayerButton({
             </p>
           </div>
 
-          {/* Score display */}
-          <div className="text-right">
+          {/* Score display - shows only after click */}
+          <motion.div
+            className="text-right"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{
+              opacity: showScore ? 1 : 0,
+              scale: showScore ? 1 : 0.5,
+            }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
             <motion.div
               id={`player-${player.id}-score`}
               className="text-6xl font-black"
@@ -108,7 +133,7 @@ export default function PlayerButton({
               }}
               key={player.score}
               initial={{ scale: 1 }}
-              animate={{ scale: [1, 1.3, 1] }}
+              animate={{ scale: showScore ? [1, 1.3, 1] : 1 }}
               transition={{ duration: 0.4, ease: "easeOut" }}
             >
               {player.score}
@@ -119,7 +144,7 @@ export default function PlayerButton({
             <div className="sr-only">
               Skóre hráče {player.name}: {player.score} {player.score === 1 ? 'bod' : player.score < 5 ? 'body' : 'bodů'}
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* Ripple effects */}

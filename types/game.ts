@@ -19,7 +19,3 @@ export interface Game {
   updatedAt: number;
   players: Record<string, Player>;
 }
-
-export interface GameWithEvents extends Game {
-  events: GameEvent[];
-}

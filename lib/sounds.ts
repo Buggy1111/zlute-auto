@@ -90,8 +90,7 @@ export function playSound(soundType: SoundType) {
       default:
         break;
     }
-  } catch (error) {
+  } catch {
     // Silently fail if audio context is not available
-    console.log('Audio playback failed:', error);
   }
 }

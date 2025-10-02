@@ -59,8 +59,6 @@ export default function Home() {
     setError('');
 
     try {
-      console.log('🚀 Starting game creation...');
-
       // Add timeout to prevent infinite loading
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Timeout: Game creation took too long')), 15000)
@@ -71,7 +69,6 @@ export default function Home() {
         timeoutPromise
       ]) as string;
 
-      console.log('✅ Redirecting to game:', gameId);
       router.push(`/game/${gameId}`);
     } catch (err: unknown) {
       console.error('❌ Failed to start game:', err);
@@ -285,6 +282,64 @@ export default function Home() {
             </p>
             <p className="text-gray-600 text-sm font-semibold">
               Sledujte silnici a buďte první, kdo uvidí žluté auto!
+            </p>
+          </div>
+        </div>
+
+        {/* SEO Content Section - Hidden but readable by search engines */}
+        <div className="mt-12 space-y-6 text-gray-800">
+          <div className="glass rounded-3xl p-6 border border-yellow-primary/20">
+            <h2 className="text-2xl font-black gradient-text mb-3">
+              🚗 Co je Žluté Auto?
+            </h2>
+            <p className="text-gray-700 leading-relaxed">
+              <strong>Žluté Auto</strong> je tradiční česká <strong>hra na cesty</strong>, kterou si milují rodiny po celé České republice.
+              Naše <strong>online multiplayer aplikace</strong> přináší tuto oblíbenou <strong>roadtrip hru</strong> do 21. století
+              s real-time bodováním a synchronizací pro až <strong>6 hráčů současně</strong>.
+            </p>
+          </div>
+
+          <div className="glass rounded-3xl p-6 border border-yellow-primary/20">
+            <h2 className="text-2xl font-black gradient-text mb-3">
+              🎮 Jak hrát online Žluté Auto?
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-3">
+              Tato <strong>online hra zdarma</strong> je perfektní <strong>zábava do auta</strong> na dlouhé cesty.
+              Jednoduše zadejte jména hráčů (2-6 osob), vytvořte hru a sdílejte link s cestujícími.
+              Když někdo uvidí žluté auto na silnici, klikne na své jméno a získá bod!
+            </p>
+            <ul className="text-gray-700 space-y-2">
+              <li>✅ <strong>Real-time bodování</strong> - všichni vidí skóre okamžitě</li>
+              <li>✅ <strong>Žádná instalace</strong> - hra běží v prohlížeči</li>
+              <li>✅ <strong>Multiplayer až pro 6 hráčů</strong></li>
+              <li>✅ <strong>Historie všech událostí</strong></li>
+              <li>✅ <strong>Achievement systém</strong> (milníky: 1, 5, 10, 20, 50, 100 bodů)</li>
+              <li>✅ <strong>Zvukové efekty</strong> pro lepší zážitek</li>
+            </ul>
+          </div>
+
+          <div className="glass rounded-3xl p-6 border border-yellow-primary/20">
+            <h2 className="text-2xl font-black gradient-text mb-3">
+              🏆 Proč hrát Žluté Auto online?
+            </h2>
+            <p className="text-gray-700 leading-relaxed">
+              Naše <strong>česká aplikace</strong> je <strong>první a jediná</strong> online verze této populární <strong>hry do auta</strong>.
+              Na rozdíl od tradiční verze &ldquo;na slovo&rdquo;, nabízíme férové bodování s historií,
+              ochranu proti spamování (2s cooldown) a profesionální herní zážitek. Perfektní pro <strong>rodinné cesty</strong>,
+              <strong>výlety s přáteli</strong> nebo <strong>dlouhé cesty autem</strong> s dětmi.
+            </p>
+          </div>
+
+          <div className="glass rounded-3xl p-6 border border-yellow-primary/20">
+            <h2 className="text-2xl font-black gradient-text mb-3">
+              📱 Žluté Auto - Česká roadtrip hra zdarma
+            </h2>
+            <p className="text-gray-700 leading-relaxed">
+              <strong>Hra žluté auto</strong> je legendární <strong>cestovní hra</strong>, kterou znají všichni Češi.
+              Pravidla jsou jednoduchá: kdo první vidí žluté auto, dostane bod. S naší aplikací můžete
+              <strong> hrát Žluté Auto online</strong> s automatickým počítáním bodů, live žebříčkem
+              a <strong>multiplayer funkcí zdarma</strong>. Ideální <strong>hra pro děti</strong> i dospělé
+              na dlouhé cesty po České republice i zahraničí.
             </p>
           </div>
         </div>

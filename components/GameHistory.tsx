@@ -24,7 +24,7 @@ export default function GameHistory({ events }: GameHistoryProps) {
             📜 Historie
           </h2>
           <div className="text-center py-12">
-            <div className="text-6xl mb-4 opacity-30 animate-pulse">🚗</div>
+            <div className="text-6xl mb-4 opacity-30 animate-pulse" style={{ filter: 'sepia(100%) saturate(400%) brightness(100%) hue-rotate(-10deg)' }}>🚗</div>
             <p className="text-gray-500 font-semibold text-lg">
               Zatím žádné žluté auto nebylo viděno...
             </p>
@@ -71,7 +71,7 @@ export default function GameHistory({ events }: GameHistoryProps) {
               {events.length} {events.length === 1 ? 'záznam' : events.length < 5 ? 'záznamy' : 'záznamů'}
             </p>
           </div>
-          <div className="text-4xl animate-bounce">🚗💨</div>
+          <div className="text-4xl animate-bounce" style={{ filter: 'sepia(100%) saturate(400%) brightness(100%) hue-rotate(-10deg)' }}>🚗💨</div>
         </div>
 
         {/* Events list */}
@@ -93,7 +93,7 @@ export default function GameHistory({ events }: GameHistoryProps) {
                   <div className="flex items-center gap-4 flex-1">
                     {/* Icon */}
                     <div className="relative">
-                      <div className="text-3xl animate-bounce">🚗</div>
+                      <div className="text-3xl animate-bounce" style={{ filter: 'sepia(100%) saturate(400%) brightness(100%) hue-rotate(-10deg)' }}>🚗</div>
                       <div className="absolute inset-0 blur-xl bg-yellow-primary opacity-30" />
                     </div>
 

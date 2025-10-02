@@ -2,6 +2,7 @@
 
 import { Game } from '@/types/game';
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 
 interface ScoreDisplayProps {
   game: Game;
@@ -18,8 +19,22 @@ export default function ScoreDisplay({ game }: ScoreDisplayProps) {
 
   return (
     <div className="glass-strong rounded-3xl shadow-2xl p-6 border-2 border-white/40 mb-6 relative overflow-hidden">
-      {/* Animated background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-yellow-primary/10 via-transparent to-yellow-secondary/10 animate-pulse-scale" />
+      {/* Animated background with MORE COLOR */}
+      <motion.div
+        className="absolute inset-0"
+        style={{
+          background: 'linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(255,165,0,0.15) 50%, rgba(255,235,59,0.2) 100%)',
+          backgroundSize: '200% 200%',
+        }}
+        animate={{
+          backgroundPosition: ['0% 0%', '100% 100%', '0% 0%'],
+        }}
+        transition={{
+          duration: 8,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      />
 
       {/* Header */}
       <div className="relative z-10 flex items-center justify-between mb-6">
@@ -30,7 +45,7 @@ export default function ScoreDisplay({ game }: ScoreDisplayProps) {
           <p className="text-sm text-gray-600 font-semibold mt-1">Live skóre</p>
         </div>
         <div className="relative">
-          <div className="text-7xl animate-float">🚗</div>
+          <div className="text-7xl animate-float" style={{ filter: 'sepia(100%) saturate(400%) brightness(100%) hue-rotate(-10deg)' }}>🚗</div>
           <div className="absolute inset-0 blur-2xl bg-yellow-primary opacity-30 animate-pulse" />
         </div>
       </div>

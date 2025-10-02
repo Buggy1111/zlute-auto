@@ -124,6 +124,7 @@ export default function FloatingParticles() {
             <motion.div
               style={{
                 fontSize: `${particle.size}px`,
+                filter: particle.emoji === '🚗' ? 'sepia(100%) saturate(400%) brightness(100%) hue-rotate(-10deg)' : 'none',
               }}
               animate={{
                 y: [0, -30, 0],
