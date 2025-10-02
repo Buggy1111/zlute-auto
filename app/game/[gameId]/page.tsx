@@ -112,19 +112,21 @@ export default function GamePage() {
     return (
       <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
         {/* Animated background */}
-        <div className="absolute inset-0">
-          {[...Array(10)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-4 h-4 bg-yellow-primary/20 rounded-full blur-sm"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `float ${3 + Math.random() * 2}s ease-in-out infinite ${Math.random() * 2}s`,
-              }}
-            />
-          ))}
-        </div>
+        {mounted && (
+          <div className="absolute inset-0">
+            {[...Array(10)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-4 h-4 bg-yellow-primary/20 rounded-full blur-sm"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  animation: `float ${3 + Math.random() * 2}s ease-in-out infinite ${Math.random() * 2}s`,
+                }}
+              />
+            ))}
+          </div>
+        )}
 
         <div className="text-center relative z-10">
           <div className="relative inline-block mb-6">
@@ -235,21 +237,23 @@ export default function GamePage() {
       ))}
 
       {/* Floating background elements */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-10">
-        {[...Array(12)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute text-4xl"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animation: `float ${6 + Math.random() * 4}s ease-in-out infinite ${Math.random() * 5}s`,
-            }}
-          >
-            {['🚗', '⭐', '💛', '✨'][Math.floor(Math.random() * 4)]}
-          </div>
-        ))}
-      </div>
+      {mounted && (
+        <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-10">
+          {[...Array(12)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute text-4xl"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animation: `float ${6 + Math.random() * 4}s ease-in-out infinite ${Math.random() * 5}s`,
+              }}
+            >
+              {['🚗', '⭐', '💛', '✨'][Math.floor(Math.random() * 4)]}
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className={`max-w-2xl mx-auto transition-all duration-1000 relative z-10 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
         {/* Premium Header */}
