@@ -7,6 +7,7 @@ import PlayerButton from '@/components/PlayerButton';
 import ScoreDisplay from '@/components/ScoreDisplay';
 import GameHistory from '@/components/GameHistory';
 import Achievement from '@/components/Achievement';
+import GameMenu from '@/components/GameMenu';
 import { useState, useEffect } from 'react';
 import { playSound } from '@/lib/sounds';
 
@@ -182,7 +183,10 @@ export default function GamePage() {
   const players = Object.values(game.players);
 
   return (
-    <div className="min-h-screen p-4 pb-32 relative overflow-hidden">
+    <div className="min-h-screen p-4 relative overflow-hidden">
+      {/* Game Menu */}
+      <GameMenu onNewGame={handleNewGame} onShare={handleShare} />
+
       {/* Achievement popup */}
       {lastAchievement && (
         <Achievement score={lastAchievement.score} playerName={lastAchievement.playerName} />
@@ -311,32 +315,6 @@ export default function GamePage() {
         </div>
       </div>
 
-      {/* Enhanced fixed bottom action bar */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 z-40">
-        <div className="glass-strong rounded-3xl border-2 border-white/50 shadow-[0_-10px_60px_rgba(0,0,0,0.2)] p-5 backdrop-blur-2xl relative overflow-hidden">
-          {/* Animated background */}
-          <div className="absolute inset-0 bg-gradient-to-r from-yellow-primary/5 via-transparent to-yellow-secondary/5 animate-pulse-scale" />
-
-          <div className="max-w-2xl mx-auto flex gap-4 relative z-10">
-            <button
-              onClick={handleShare}
-              className="flex-1 py-5 glass-strong rounded-2xl font-black text-xl shadow-xl hover:shadow-2xl transition-all transform hover:scale-110 active:scale-95 border-2 border-yellow-primary/30 text-gray-800 flex items-center justify-center gap-3 overflow-hidden group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-primary/0 via-yellow-primary/10 to-yellow-primary/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-              <span className="text-3xl group-hover:scale-125 transition-transform">📤</span>
-              <span className="relative">Sdílet</span>
-            </button>
-            <button
-              onClick={handleNewGame}
-              className="flex-1 py-5 bg-gradient-to-r from-yellow-primary via-yellow-secondary to-yellow-dark text-white rounded-2xl font-black text-xl shadow-xl hover:shadow-2xl transition-all transform hover:scale-110 active:scale-95 flex items-center justify-center gap-3 border-2 border-yellow-light overflow-hidden group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-              <span className="text-3xl group-hover:rotate-180 transition-transform duration-500">🎮</span>
-              <span className="relative">Nová hra</span>
-            </button>
-          </div>
-        </div>
-      </div>
 
     </div>
   );
