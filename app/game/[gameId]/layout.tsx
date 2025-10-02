@@ -3,10 +3,11 @@ import type { Metadata } from 'next';
 export async function generateMetadata({
   params,
 }: {
-  params: { gameId: string };
+  params: Promise<{ gameId: string }>;
 }): Promise<Metadata> {
+  const { gameId } = await params;
   return {
-    title: `Žluté Auto - Hra #${params.gameId}`,
+    title: `Žluté Auto - Hra #${gameId}`,
     description: 'Sledujte živé skóre v naší rodinné hře Žluté Auto! Kdo první vidí žluté auto?',
     openGraph: {
       title: `Žluté Auto - Hra`,
