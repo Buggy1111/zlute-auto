@@ -18,4 +18,7 @@ export interface Game {
   createdAt: number;
   updatedAt: number;
   players: Record<string, Player>;
+  status: 'playing' | 'finished';
+  startedAt?: number;
+  finishedAt?: number;
 }

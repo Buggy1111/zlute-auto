@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { AlertCircle, CheckCircle, Info, X } from 'lucide-react';
 
 interface ToastProps {
   message: string;
@@ -20,11 +21,14 @@ export default function Toast({ message, type = 'info', onClose }: ToastProps) {
     return () => clearTimeout(timer);
   }, [onClose]);
 
-  const bgColor = type === 'error' ? 'from-red-500 to-red-600' :
-                  type === 'success' ? 'from-green-500 to-green-600' :
-                  'from-yellow-primary to-yellow-secondary';
-
-  const emoji = type === 'error' ? '⚠️' : type === 'success' ? '✅' : 'ℹ️';
+  const Icon =
+    type === 'error' ? AlertCircle : type === 'success' ? CheckCircle : Info;
+  const colorClass =
+    type === 'error'
+      ? 'border-danger text-danger'
+      : type === 'success'
+      ? 'border-success text-success'
+      : 'border-accent text-accent';
 
   return (
     <div
@@ -32,17 +36,19 @@ export default function Toast({ message, type = 'info', onClose }: ToastProps) {
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
       }`}
     >
-      <div className={`bg-gradient-to-r ${bgColor} text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 max-w-sm`}>
-        <span className="text-2xl">{emoji}</span>
-        <p className="font-bold">{message}</p>
+      <div
+        className={`card px-6 py-4 flex items-center gap-3 max-w-sm ${colorClass} border-2`}
+      >
+        <Icon className="w-5 h-5" />
+        <p className="font-bold text-text">{message}</p>
         <button
           onClick={() => {
             setIsVisible(false);
             setTimeout(onClose, 300);
           }}
-          className="ml-2 text-white/80 hover:text-white text-xl"
+          className="ml-2 text-text-muted hover:text-text"
         >
-          ✕
+          <X className="w-4 h-4" />
         </button>
       </div>
     </div>

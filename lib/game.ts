@@ -21,6 +21,8 @@ const PLAYER_COLORS = [
   '#F59E0B', // Amber yellow
   '#FFB800', // Golden orange
   '#FFDB58', // Mustard yellow
+  '#FFC107', // Amber
+  '#FFAA00', // Dark golden
 ];
 
 export async function createGame(playerNames: string[]): Promise<string> {
@@ -39,10 +41,13 @@ export async function createGame(playerNames: string[]): Promise<string> {
       };
     });
 
+    const now = Date.now();
     const game: Omit<Game, 'id'> = {
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      createdAt: now,
+      updatedAt: now,
       players,
+      status: 'playing',
+      startedAt: now,
     };
 
     await setDoc(gameRef, game);
@@ -168,5 +173,14 @@ export function subscribeToGameEvents(
       ...doc.data(),
     })) as GameEvent[];
     callback(events);
+  });
+}
+
+export async function endGame(gameId: string): Promise<void> {
+  const gameRef = doc(db, 'games', gameId);
+  await updateDoc(gameRef, {
+    status: 'finished',
+    finishedAt: Date.now(),
+    updatedAt: Date.now(),
   });
 }

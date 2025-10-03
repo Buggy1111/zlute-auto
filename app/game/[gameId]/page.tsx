@@ -1,19 +1,16 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { useGame } from '@/lib/hooks/useGame';
 import PlayerButton from '@/components/PlayerButton';
-import ScoreDisplay from '@/components/ScoreDisplay';
-import GameHistory from '@/components/GameHistory';
-import Achievement from '@/components/Achievement';
 import GameMenu from '@/components/GameMenu';
 import Toast from '@/components/Toast';
-import FloatingParticles from '@/components/FloatingParticles';
-import GradientMesh from '@/components/GradientMesh';
-import { useState, useEffect } from 'react';
+import GameTimer from '@/components/GameTimer';
+import GameResults from '@/components/GameResults';
+import { useState } from 'react';
 import { playSound } from '@/lib/sounds';
-import { motion } from 'framer-motion';
+import { endGame } from '@/lib/game';
+import { Car } from 'lucide-react';
 
 export default function GamePage() {
   const params = useParams();
@@ -21,52 +18,56 @@ export default function GamePage() {
   const gameId = params.gameId as string;
   const { game, events, loading, error, addPoint } = useGame(gameId);
   const [addingPoint, setAddingPoint] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
-  const [lastAchievement, setLastAchievement] = useState<{ score: number; playerName: string } | null>(null);
-  const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toastMessage, setToastMessage] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info';
+  } | null>(null);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const isPlaying = game?.status === 'playing';
+  const isFinished = game?.status === 'finished';
 
   const handleAddPoint = async (playerId: string) => {
+    if (!isPlaying) return;
+
     setAddingPoint(playerId);
 
     try {
       await addPoint(playerId);
-
-      // Play point sound
       playSound('point');
 
-      // Show achievement if milestone reached
-      if (game) {
-        const player = game.players[playerId];
-        const newScore = player.score + 1;
-        const achievementScores = [1, 5, 10, 20, 50, 100];
-
-        if (achievementScores.includes(newScore)) {
-          setLastAchievement({ score: newScore, playerName: player.name });
-          // Play achievement sound
-          setTimeout(() => playSound('achievement'), 500);
-        }
-      }
-
-      // Enhanced haptic feedback
       if ('vibrate' in navigator) {
-        navigator.vibrate([100, 50, 100, 50, 200]);
+        navigator.vibrate([100, 50, 100]);
       }
     } catch (err) {
-      // Play error sound
       playSound('error');
-
-      // Show error toast instead of crashing
       const errorMessage = err instanceof Error ? err.message : 'Něco se pokazilo';
       setToastMessage({
-        message: errorMessage.includes('rychle') ? 'Příliš rychle! Počkej chvilku 😊' : errorMessage,
-        type: 'error'
+        message: errorMessage.includes('rychle')
+          ? 'Příliš rychle! Počkej chvilku 😊'
+          : errorMessage,
+        type: 'error',
       });
     } finally {
       setAddingPoint(null);
+    }
+  };
+
+  const handleEndGame = async () => {
+    if (!game) return;
+
+    try {
+      await endGame(gameId);
+      playSound('achievement');
+      setToastMessage({
+        message: 'Hra ukončena! Zobrazuji výsledky...',
+        type: 'success',
+      });
+    } catch (err) {
+      playSound('error');
+      setToastMessage({
+        message: 'Chyba při ukončení hry',
+        type: 'error',
+      });
     }
   };
 
@@ -94,43 +95,16 @@ export default function GamePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-        {/* Animated background */}
-        {mounted && (
-          <div className="absolute inset-0">
-            {[...Array(10)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute w-4 h-4 bg-yellow-primary/20 rounded-full blur-sm"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animation: `float ${3 + Math.random() * 2}s ease-in-out infinite ${Math.random() * 2}s`,
-                }}
-              />
-            ))}
-          </div>
-        )}
-
-        <div className="text-center relative z-10">
-          <div className="relative inline-block mb-6">
-            <div className="absolute inset-0 blur-3xl bg-yellow-primary opacity-50 animate-pulse" />
-            <div className="absolute inset-0 blur-2xl bg-yellow-secondary opacity-30 animate-glow" />
-            <div className="text-9xl animate-float relative z-10 drop-shadow-[0_0_40px_rgba(255,215,0,0.9)]" style={{ filter: 'sepia(100%) saturate(400%) brightness(100%) hue-rotate(-10deg)' }}>
-              🚗
-            </div>
-          </div>
-          <p className="text-4xl font-black gradient-text mb-4 drop-shadow-lg">
-            Načítání hry...
-          </p>
-          <div className="flex justify-center gap-3">
+      <div className="min-h-screen flex items-center justify-center bg-bg p-4">
+        <div className="text-center">
+          <Car className="w-24 h-24 text-accent neon-glow-strong mx-auto mb-6 animate-pulse" />
+          <p className="text-2xl font-bold neon-text mb-4">Načítání hry...</p>
+          <div className="flex justify-center gap-2">
             {[0, 0.1, 0.2].map((delay, i) => (
               <div
                 key={i}
-                className="w-4 h-4 bg-gradient-to-br from-yellow-primary to-yellow-secondary rounded-full shadow-lg"
-                style={{
-                  animation: `bounce 1s ease-in-out infinite ${delay}s`,
-                }}
+                className="w-3 h-3 bg-accent rounded-full animate-bounce"
+                style={{ animationDelay: `${delay}s` }}
               />
             ))}
           </div>
@@ -141,23 +115,19 @@ export default function GamePage() {
 
   if (error || !game) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center bg-bg p-4">
         <div className="text-center max-w-md">
-          <div className="text-9xl mb-6 animate-[shake_1s_ease-in-out]">😢</div>
-          <h1 className="text-5xl font-black gradient-text mb-4 drop-shadow-lg">
-            Hra nenalezena
-          </h1>
-          <div className="glass-strong rounded-3xl p-8 mb-6 border-2 border-white/50 shadow-2xl">
-            <p className="text-gray-800 font-bold text-xl mb-2">
+          <div className="text-7xl mb-6">😢</div>
+          <h1 className="text-4xl font-bold neon-text mb-4">Hra nenalezena</h1>
+          <div className="card p-8 mb-6">
+            <p className="text-text font-bold text-lg mb-2">
               Tato hra neexistuje nebo byla smazána.
             </p>
-            <p className="text-gray-600 font-semibold">
-              Vytvořte si novou hru a začněte hrát!
-            </p>
+            <p className="text-text-dim">Vytvořte si novou hru a začněte hrát!</p>
           </div>
           <button
             onClick={handleNewGame}
-            className="px-10 py-5 bg-gradient-to-r from-yellow-primary to-yellow-secondary text-white rounded-2xl font-black text-2xl shadow-[0_20px_60px_rgba(255,215,0,0.5)] hover:shadow-[0_30px_80px_rgba(255,215,0,0.7)] transform hover:scale-110 transition-all"
+            className="px-10 py-5 bg-accent text-bg rounded-lg font-bold text-xl neon-border hover:bg-accent-hover transition-all"
           >
             Vytvořit novou hru 🎮
           </button>
@@ -169,17 +139,14 @@ export default function GamePage() {
   const players = Object.values(game.players).sort((a, b) => b.score - a.score);
 
   return (
-    <div className="min-h-screen p-4 relative overflow-hidden">
-      {/* Gradient Mesh Background */}
-      <GradientMesh />
+    <div className="min-h-screen p-4 bg-bg">
+      <GameMenu
+        onNewGame={handleNewGame}
+        onShare={handleShare}
+        onEndGame={handleEndGame}
+        gameStatus={game.status}
+      />
 
-      {/* Floating Particles Background */}
-      <FloatingParticles />
-
-      {/* Game Menu */}
-      <GameMenu onNewGame={handleNewGame} onShare={handleShare} />
-
-      {/* Toast notifications */}
       {toastMessage && (
         <Toast
           message={toastMessage.message}
@@ -188,136 +155,49 @@ export default function GamePage() {
         />
       )}
 
-      {/* Achievement popup */}
-      {lastAchievement && (
-        <Achievement score={lastAchievement.score} playerName={lastAchievement.playerName} />
-      )}
+      <div className="max-w-2xl mx-auto">
+        <div className="text-center mb-8">
+          <Car className="w-16 h-16 text-accent neon-glow mx-auto mb-4" strokeWidth={1.5} />
+          <h1 className="neon-text text-4xl mb-3">Žluté Auto</h1>
+          <p className="text-text-dim">
+            {isPlaying ? 'Klikni, když vidíš žluté auto!' : 'Výsledky hry'}
+          </p>
+        </div>
 
-      {/* Floating background elements */}
-      {mounted && (
-        <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-10">
-          {[...Array(12)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute text-4xl"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `float ${6 + Math.random() * 4}s ease-in-out infinite ${Math.random() * 5}s`,
-              }}
-            >
-              {['🚗', '⭐', '💛', '✨'][Math.floor(Math.random() * 4)]}
+        {/* Timer - show during playing and finished */}
+        {game.startedAt && (
+          <GameTimer startedAt={game.startedAt} finishedAt={game.finishedAt} />
+        )}
+
+        {/* Playing state - show only buttons */}
+        {isPlaying && (
+          <>
+            <div className="space-y-4 mb-6">
+              {players.map((player) => (
+                <PlayerButton
+                  key={player.id}
+                  player={player}
+                  onClick={() => handleAddPoint(player.id)}
+                  disabled={addingPoint !== null}
+                  hideScore={true}
+                />
+              ))}
             </div>
-          ))}
-        </div>
-      )}
 
-      <div className={`max-w-2xl mx-auto transition-all duration-1000 relative z-10 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
-        {/* Premium Header with 3D depth */}
-        <div className="text-center mb-8 relative" style={{ perspective: '1000px' }}>
-          <div className="absolute inset-0 blur-3xl bg-yellow-primary/20 animate-pulse-scale" />
-          <motion.div
-            className="relative z-10"
-            animate={{
-              rotateX: [0, 2, 0, -2, 0],
-              rotateY: [0, -2, 0, 2, 0],
-            }}
-            transition={{
-              duration: 10,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            style={{ transformStyle: 'preserve-3d' }}
-          >
-            <div className="inline-block mb-4">
-              <div className="relative">
-                <div className="absolute inset-0 blur-3xl bg-yellow-primary opacity-50 animate-glow" />
-                <motion.div
-                  className="animate-float"
-                  whileHover={{ scale: 1.1, rotateZ: 5 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-yellow-primary/30 shadow-[0_0_60px_rgba(255,215,0,0.6)] bg-gradient-to-br from-yellow-light/20 to-transparent backdrop-blur-sm">
-                    <Image
-                      src="/porsche.webp"
-                      alt="Yellow Porsche"
-                      width={128}
-                      height={128}
-                      priority
-                      className="w-full h-full object-cover scale-110"
-                      style={{
-                        filter: 'sepia(100%) saturate(300%) brightness(90%) hue-rotate(-10deg)',
-                      }}
-                    />
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-            <motion.h1
-              className="text-6xl font-black gradient-text mb-3"
-              style={{
-                textShadow: '0 10px 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 165, 0, 0.2)',
-                transform: 'translateZ(20px)',
-              }}
-              animate={{
-                textShadow: [
-                  '0 10px 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 165, 0, 0.2)',
-                  '0 15px 40px rgba(255, 215, 0, 0.5), 0 0 80px rgba(255, 165, 0, 0.4)',
-                  '0 10px 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 165, 0, 0.2)',
-                ],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
+            {/* End Game Button */}
+            <button
+              onClick={handleEndGame}
+              className="w-full py-5 bg-danger/20 border-2 border-danger text-danger rounded-lg font-bold text-xl hover:bg-danger/30 transition-all flex items-center justify-center gap-3"
             >
-              Žluté Auto
-            </motion.h1>
-            <motion.div
-              className="glass-strong rounded-2xl px-8 py-3 inline-block border-2 border-yellow-primary/40 shadow-[0_0_40px_rgba(255,215,0,0.2)]"
-              style={{ transform: 'translateZ(10px)' }}
-              whileHover={{ scale: 1.05, y: -2 }}
-            >
-              <p className="text-gray-800 font-black text-lg">
-                👀 Klikni, když vidíš žluté auto! 👀
-              </p>
-            </motion.div>
-          </motion.div>
-        </div>
+              <span>🏁</span>
+              Ukončit hru a zobrazit výsledky
+            </button>
+          </>
+        )}
 
-        {/* Score Display */}
-        <ScoreDisplay game={game} />
-
-        {/* Player Buttons */}
-        <div className="space-y-5 mb-8">
-          {players.map((player, index) => (
-            <div
-              key={player.id}
-              style={{
-                animation: mounted ? `slideInRight 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 0.15}s both` : 'none'
-              }}
-            >
-              <PlayerButton
-                player={player}
-                onClick={() => handleAddPoint(player.id)}
-                disabled={addingPoint !== null}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Game History */}
-        <div
-          style={{
-            animation: mounted ? 'fadeIn 0.8s ease-out 1s both' : 'none'
-          }}
-        >
-          <GameHistory events={events} />
-        </div>
+        {/* Finished state - show results */}
+        {isFinished && <GameResults game={game} events={events} />}
       </div>
-
-
     </div>
   );
 }
