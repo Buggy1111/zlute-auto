@@ -2,24 +2,61 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Helper functions
+    function isValidPlayerName(name) {
+      return name is string
+        && name.size() > 0
+        && name.size() <= 20;
+    }
+
+    function isValidGameData(data) {
+      return data.keys().hasAll(['createdAt', 'updatedAt', 'players', 'status'])
+        && data.players.size() >= 2
+        && data.players.size() <= 8
+        && data.status in ['playing', 'finished'];
+    }
+
+    function isValidScore(score) {
+      return score is int
+        && score >= 0
+        && score <= 1000; // Max 1000 points per player
+    }
+
+    function isValidRating(rating) {
+      return rating is int
+        && rating >= 1
+        && rating <= 5;
+    }
+
+    // Rate limiting helper (simple timestamp check)
+    function timeSinceLastUpdate(data) {
+      return request.time.toMillis() - data.updatedAt > 1000; // 1 second minimum between updates
+    }
+
     // Games collection
     match /games/{gameId} {
-      // Anyone can read games
+      // Anyone can read games (needed for multiplayer)
       allow read: if true;
 
-      // Only allow creation with valid structure
-      allow create: if request.resource.data.keys().hasAll(['createdAt', 'updatedAt', 'players'])
-                    && request.resource.data.players.size() >= 2
-                    && request.resource.data.players.size() <= 6;
+      // Anyone can create a game
+      allow create: if isValidGameData(request.resource.data)
+        && request.resource.data.createdAt is int
+        && request.resource.data.updatedAt is int
+        && request.resource.data.createdAt > 0
+        && request.resource.data.updatedAt > 0;
 
-      // Only allow updates to players scores and updatedAt
-      // Rate limit: at least 1 second between updates
-      allow update: if request.resource.data.diff(resource.data).affectedKeys()
-                       .hasOnly(['players', 'updatedAt'])
-                    && request.resource.data.updatedAt is int
-                    && request.time > resource.data.updatedAt + duration.value(1, 's');
+      // Anyone can update a game (add points, end game)
+      // But with validation and rate limiting
+      allow update: if isValidGameData(request.resource.data)
+        && timeSinceLastUpdate(resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt // Can't change creation time
+        && request.resource.data.updatedAt > resource.data.updatedAt // Must update timestamp
+        // Validate all player scores
+        && request.resource.data.players.keys().hasAll(resource.data.players.keys()) // Can't remove players
+        && request.resource.data.players.size() == resource.data.players.size(); // Can't add players
 
-      // Prevent deletion of games
+      // No one can delete games (optional - remove this line if you want to allow deletion)
       allow delete: if false;
 
       // Events subcollection
@@ -27,13 +64,61 @@ service cloud.firestore {
         // Anyone can read events
         allow read: if true;
 
-        // Only allow creating valid events
+        // Anyone can create events (when adding points)
         allow create: if request.resource.data.keys().hasAll(['playerId', 'playerName', 'timestamp', 'type'])
-                      && request.resource.data.type == 'point_added'
-                      && request.resource.data.timestamp is int;
+          && request.resource.data.type == 'point_added'
+          && request.resource.data.timestamp is int;
 
-        // Prevent updates and deletes of events
-        allow update, delete: if false;
+        // Events can be deleted (when challenge is rejected)
+        allow delete: if true;
+
+        // Events cannot be updated
+        allow update: if false;
+      }
+
+      // Challenges subcollection
+      match /challenges/{challengeId} {
+        // Anyone can read challenges
+        allow read: if true;
+
+        // Anyone can create a challenge
+        allow create: if request.resource.data.keys().hasAll(['gameId', 'eventId', 'playerId', 'playerName', 'challengedBy', 'challengedByName', 'votes', 'status', 'createdAt', 'expiresAt'])
+          && request.resource.data.status == 'voting'
+          && request.resource.data.votes is map
+          && request.resource.data.createdAt is int
+          && request.resource.data.expiresAt is int
+          && request.resource.data.expiresAt > request.resource.data.createdAt;
+
+        // Anyone can update a challenge (add votes, resolve)
+        allow update: if request.resource.data.gameId == resource.data.gameId
+          && request.resource.data.eventId == resource.data.eventId
+          && request.resource.data.playerId == resource.data.playerId
+          && request.resource.data.challengedBy == resource.data.challengedBy;
+
+        // Challenges cannot be deleted
+        allow delete: if false;
+      }
+
+      // Ratings subcollection
+      match /ratings/{playerId} {
+        // Anyone can read ratings (shown in results)
+        allow read: if true;
+
+        // Anyone can create a rating
+        allow create: if request.resource.data.keys().hasAll(['gameId', 'playerId', 'playerName', 'ratings', 'ratedBy'])
+          && request.resource.data.gameId == gameId
+          && request.resource.data.playerId == playerId
+          && request.resource.data.ratings is map
+          && request.resource.data.ratedBy is list;
+
+        // Anyone can update ratings (add more ratings)
+        allow update: if request.resource.data.gameId == resource.data.gameId
+          && request.resource.data.playerId == resource.data.playerId
+          && request.resource.data.ratedBy.size() > resource.data.ratedBy.size() // Only allow adding ratings
+          && request.resource.data.ratings.size() == request.resource.data.ratedBy.size(); // Ratings match ratedBy count
+
+        // Ratings cannot be deleted
+        allow delete: if false;
       }
     }
   }

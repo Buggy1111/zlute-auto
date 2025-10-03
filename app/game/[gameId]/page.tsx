@@ -7,9 +7,12 @@ import GameMenu from '@/components/GameMenu';
 import Toast from '@/components/Toast';
 import GameTimer from '@/components/GameTimer';
 import GameResults from '@/components/GameResults';
-import { useState } from 'react';
+import ChallengeToast from '@/components/ChallengeToast';
+import ChallengeVoting from '@/components/ChallengeVoting';
+import { useState, useEffect } from 'react';
 import { playSound } from '@/lib/sounds';
-import { endGame } from '@/lib/game';
+import { endGame, createChallenge, voteOnChallenge, resolveChallenge, subscribeToActiveChallenge } from '@/lib/game';
+import type { Challenge } from '@/types/game';
 import { Car } from 'lucide-react';
 
 export default function GamePage() {
@@ -22,12 +25,66 @@ export default function GamePage() {
     message: string;
     type: 'success' | 'error' | 'info';
   } | null>(null);
+  const [lastEventId, setLastEventId] = useState<string | null>(null);
+  const [showChallengeToast, setShowChallengeToast] = useState(false);
+  const [lastPointPlayer, setLastPointPlayer] = useState<{ id: string; name: string; color: string } | null>(null);
+  const [activeChallenge, setActiveChallenge] = useState<Challenge | null>(null);
+  const [currentPlayerId, setCurrentPlayerId] = useState<string>('');
+
+  // Let user select their player on first load
+  useEffect(() => {
+    if (!game) return;
+
+    const storedPlayerId = localStorage.getItem(`gamePlayer_${gameId}`);
+    if (storedPlayerId && game.players[storedPlayerId]) {
+      setCurrentPlayerId(storedPlayerId);
+    } else if (Object.keys(game.players).length > 0 && !currentPlayerId) {
+      // Auto-select first player if not set (can be changed later)
+      const firstPlayerId = Object.keys(game.players)[0];
+      setCurrentPlayerId(firstPlayerId);
+      localStorage.setItem(`gamePlayer_${gameId}`, firstPlayerId);
+    }
+  }, [game, gameId, currentPlayerId]);
 
   const isPlaying = game?.status === 'playing';
   const isFinished = game?.status === 'finished';
 
+  // Subscribe to active challenges
+  useEffect(() => {
+    if (!gameId) return;
+
+    const unsubscribe = subscribeToActiveChallenge(gameId, (challenge) => {
+      setActiveChallenge(challenge);
+
+      // Auto-resolve challenge when it expires
+      if (challenge && challenge.status === 'voting') {
+        const timeUntilExpire = challenge.expiresAt - Date.now();
+        if (timeUntilExpire > 0) {
+          const timer = setTimeout(async () => {
+            try {
+              const result = await resolveChallenge(gameId, challenge.id);
+              setToastMessage({
+                message: result === 'approved'
+                  ? '✅ Bod byl schválen!'
+                  : '❌ Bod byl zamítnut!',
+                type: result === 'approved' ? 'success' : 'error',
+              });
+              playSound(result === 'approved' ? 'achievement' : 'error');
+            } catch (err) {
+              console.error('Error auto-resolving challenge:', err);
+            }
+          }, timeUntilExpire + 100);
+
+          return () => clearTimeout(timer);
+        }
+      }
+    });
+
+    return unsubscribe;
+  }, [gameId]);
+
   const handleAddPoint = async (playerId: string) => {
-    if (!isPlaying) return;
+    if (!isPlaying || !game) return;
 
     setAddingPoint(playerId);
 
@@ -37,6 +94,19 @@ export default function GamePage() {
 
       if ('vibrate' in navigator) {
         navigator.vibrate([100, 50, 100]);
+      }
+
+      // Get the latest event ID and show challenge toast
+      const player = game.players[playerId];
+      if (player && events.length > 0) {
+        const latestEvent = events[0]; // Events are sorted desc
+        setLastEventId(latestEvent.id);
+        setLastPointPlayer({
+          id: playerId,
+          name: player.name,
+          color: player.color,
+        });
+        setShowChallengeToast(true);
       }
     } catch (err) {
       playSound('error');
@@ -52,6 +122,68 @@ export default function GamePage() {
     }
   };
 
+  const handleChallenge = async () => {
+    if (!lastPointPlayer || !lastEventId || !game) return;
+
+    try {
+      // Find current player's info from game.players
+      const currentPlayer = Object.values(game.players).find(p => p.id === currentPlayerId);
+      if (!currentPlayer) {
+        throw new Error('Player not found');
+      }
+
+      await createChallenge(
+        gameId,
+        lastEventId,
+        lastPointPlayer.id,
+        lastPointPlayer.name,
+        currentPlayerId,
+        currentPlayer.name
+      );
+      playSound('error');
+    } catch {
+      setToastMessage({
+        message: 'Chyba při vytváření challenge',
+        type: 'error',
+      });
+    }
+  };
+
+  const handleVote = async (vote: 'yes' | 'no') => {
+    if (!activeChallenge) return;
+
+    try {
+      await voteOnChallenge(gameId, activeChallenge.id, currentPlayerId, vote);
+
+      // Check if all players have voted
+      const totalPlayers = Object.keys(game?.players || {}).length;
+      const totalVotes = Object.keys(activeChallenge.votes).length + 1; // +1 for current vote
+
+      if (totalVotes >= totalPlayers) {
+        // Resolve challenge after short delay
+        setTimeout(async () => {
+          try {
+            const result = await resolveChallenge(gameId, activeChallenge.id);
+            setToastMessage({
+              message: result === 'approved'
+                ? '✅ Bod byl schválen!'
+                : '❌ Bod byl zamítnut!',
+              type: result === 'approved' ? 'success' : 'error',
+            });
+            playSound(result === 'approved' ? 'achievement' : 'error');
+          } catch (err) {
+            console.error('Error resolving challenge:', err);
+          }
+        }, 1000);
+      }
+    } catch {
+      setToastMessage({
+        message: 'Chyba při hlasování',
+        type: 'error',
+      });
+    }
+  };
+
   const handleEndGame = async () => {
     if (!game) return;
 
@@ -62,7 +194,7 @@ export default function GamePage() {
         message: 'Hra ukončena! Zobrazuji výsledky...',
         type: 'success',
       });
-    } catch (err) {
+    } catch {
       playSound('error');
       setToastMessage({
         message: 'Chyba při ukončení hry',
@@ -147,11 +279,52 @@ export default function GamePage() {
         gameStatus={game.status}
       />
 
+      {/* Player Selector - only show during playing */}
+      {isPlaying && game && (
+        <div className="fixed top-4 left-4 z-40">
+          <select
+            value={currentPlayerId}
+            onChange={(e) => {
+              setCurrentPlayerId(e.target.value);
+              localStorage.setItem(`gamePlayer_${gameId}`, e.target.value);
+            }}
+            className="card px-4 py-2 text-sm font-bold bg-surface border-line hover:border-accent transition-colors cursor-pointer"
+            style={{ color: game.players[currentPlayerId]?.color || '#FFD700' }}
+          >
+            {players.map((player) => (
+              <option key={player.id} value={player.id}>
+                {player.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {toastMessage && (
         <Toast
           message={toastMessage.message}
           type={toastMessage.type}
           onClose={() => setToastMessage(null)}
+        />
+      )}
+
+      {/* Challenge Toast */}
+      {showChallengeToast && lastPointPlayer && (
+        <ChallengeToast
+          playerName={lastPointPlayer.name}
+          playerColor={lastPointPlayer.color}
+          onChallenge={handleChallenge}
+          onClose={() => setShowChallengeToast(false)}
+        />
+      )}
+
+      {/* Challenge Voting Modal */}
+      {activeChallenge && game && (
+        <ChallengeVoting
+          challenge={activeChallenge}
+          players={game.players}
+          currentPlayerId={currentPlayerId}
+          onVote={handleVote}
         />
       )}
 
@@ -196,7 +369,7 @@ export default function GamePage() {
         )}
 
         {/* Finished state - show results */}
-        {isFinished && <GameResults game={game} events={events} />}
+        {isFinished && <GameResults game={game} events={events} currentPlayerId={currentPlayerId} />}
       </div>
     </div>
   );

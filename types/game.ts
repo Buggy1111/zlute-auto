@@ -22,3 +22,27 @@ export interface Game {
   startedAt?: number;
   finishedAt?: number;
 }
+
+export interface Challenge {
+  id: string;
+  gameId: string;
+  eventId: string;
+  playerId: string;
+  playerName: string;
+  challengedBy: string;
+  challengedByName: string;
+  votes: Record<string, 'yes' | 'no'>;
+  status: 'voting' | 'approved' | 'rejected';
+  createdAt: number;
+  resolvedAt?: number;
+  expiresAt: number;
+}
+
+export interface PlayerRating {
+  gameId: string;
+  playerId: string;
+  playerName: string;
+  ratings: Record<string, number>;
+  averageRating?: number;
+  ratedBy: string[];
+}

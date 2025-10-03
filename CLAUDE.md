@@ -157,16 +157,37 @@ This project uses minimal dependencies:
 
 ## Firebase Security
 
-Rate limiting is currently **client-side only** (2s cooldown in `lib/game.ts`). For production deployment, add Firestore Security Rules:
+### Security Rules Setup
 
-```javascript
-// Recommended rules (not currently implemented)
-match /games/{gameId} {
-  allow read: if true;
-  allow create: if request.auth != null || true; // Adjust based on auth
-  allow update: if request.time > resource.data.updatedAt + duration.value(2, 's');
-}
-```
+**IMPORTANT**: Before deploying to production (Vercel), you MUST set up Firestore Security Rules!
+
+**Files**:
+- `firestore.rules` - Complete security rules configuration
+- `FIREBASE_SECURITY_SETUP.md` - Detailed setup instructions
+
+### How to Deploy Security Rules
+
+1. Open Firebase Console: https://console.firebase.google.com/
+2. Go to **Firestore Database** → **Rules**
+3. Copy entire contents of `firestore.rules`
+4. Paste into Firebase Console editor
+5. Click **Publish**
+
+### What Security Rules Do
+
+**Protection against**:
+- ✅ Server-side rate limiting (1 second minimum between updates)
+- ✅ Invalid data (scores, player counts, names)
+- ✅ Game deletion
+- ✅ Player manipulation after game creation
+- ✅ Invalid ratings (must be 1-5 stars)
+- ✅ Database spam and attacks
+
+**Rate Limiting**:
+- Client-side: 2 seconds (UX, user-friendly error)
+- Server-side: 1 second (security, enforced by Firebase)
+
+**Note**: Without Security Rules, your database is **completely open** - anyone can read, write, or delete all data!
 
 ## Common Patterns
 

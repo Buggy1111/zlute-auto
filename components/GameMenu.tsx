@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Menu, X, Share2, Plus, Coffee, BookOpen, Info, StopCircle } from 'lucide-react';
+import Image from 'next/image';
+import { Menu, X, Share2, Plus, Coffee, BookOpen, Info } from 'lucide-react';
 
 interface GameMenuProps {
   onNewGame: () => void;
@@ -10,9 +11,10 @@ interface GameMenuProps {
   gameStatus?: 'playing' | 'finished';
 }
 
-export default function GameMenu({ onNewGame, onShare, onEndGame, gameStatus }: GameMenuProps) {
+export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
 
   return (
@@ -96,21 +98,19 @@ export default function GameMenu({ onNewGame, onShare, onEndGame, gameStatus }: 
               </div>
             </button>
 
-            {/* Info */}
-            <div className="card p-4 border-accent/30">
-              <div className="flex items-start gap-3">
+            {/* How to Play */}
+            <button
+              onClick={() => setShowHowToPlay(true)}
+              className="w-full card p-4 hover:border-accent transition-colors text-left"
+            >
+              <div className="flex items-center gap-3">
                 <Info className="w-5 h-5 text-accent" />
                 <div>
-                  <h3 className="font-bold text-text mb-2">Jak hrát</h3>
-                  <ul className="space-y-1 text-sm text-text-dim">
-                    <li>• Sleduj silnici</li>
-                    <li>• Vidíš žluté auto?</li>
-                    <li>• Klikni na své jméno</li>
-                    <li>• Vyhrává hráč s nejvíce body!</li>
-                  </ul>
+                  <h3 className="font-bold text-text">Jak hrát</h3>
+                  <p className="text-sm text-text-dim">Pravidla a mechaniky</p>
                 </div>
               </div>
-            </div>
+            </button>
 
             {/* Support */}
             <button
@@ -239,6 +239,126 @@ export default function GameMenu({ onNewGame, onShare, onEndGame, gameStatus }: 
         </>
       )}
 
+      {/* How to Play Modal */}
+      {showHowToPlay && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/80 backdrop-blur-md z-50"
+            onClick={() => setShowHowToPlay(false)}
+          />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+            <div
+              className="card p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto pointer-events-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-3xl font-bold neon-text">Jak hrát</h2>
+                <button
+                  onClick={() => setShowHowToPlay(false)}
+                  className="text-text-muted hover:text-text"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <div className="p-4 bg-surface-elevated rounded-lg">
+                  <h3 className="text-xl font-bold text-text mb-3">
+                    🎯 Základní pravidla
+                  </h3>
+                  <ul className="space-y-2 text-text-dim">
+                    <li>1️⃣ Sledujte silnici a hledejte žlutá auta</li>
+                    <li>2️⃣ Když vidíš žluté auto, klikni na své tlačítko</li>
+                    <li>3️⃣ Za každé žluté auto získáš 1 bod</li>
+                    <li>4️⃣ Vyhrává hráč s nejvíce body na konci hry</li>
+                  </ul>
+                </div>
+
+                <div className="p-4 bg-surface-elevated rounded-lg">
+                  <h3 className="text-xl font-bold text-text mb-3">
+                    ⚡ Challenge systém
+                  </h3>
+                  <div className="space-y-3 text-text-dim">
+                    <p>
+                      <strong className="text-text">Není si jistý, že auto bylo žluté?</strong>
+                    </p>
+                    <p>
+                      Po každém bodu se zobrazí <strong className="text-accent">5sekundové okno</strong>,
+                      kdy můžeš stisknout tlačítko &ldquo;Challenge!&rdquo;
+                    </p>
+                    <p>
+                      Otevře se <strong className="text-text">hlasování na 10 sekund</strong>,
+                      kde všichni hráči hlasují, zda auto bylo opravdu žluté.
+                    </p>
+                    <p className="text-success">
+                      ✓ Většina řekne ANO → Bod zůstává
+                    </p>
+                    <p className="text-danger">
+                      ✗ Většina řekne NE → Bod se odebere
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-surface-elevated rounded-lg">
+                  <h3 className="text-xl font-bold text-text mb-3">
+                    ⭐ Hodnocení hráčů
+                  </h3>
+                  <div className="space-y-3 text-text-dim">
+                    <p>
+                      Po skončení hry můžeš ohodnotit spoluhráče hvězdičkami (1-5).
+                    </p>
+                    <p>
+                      Hodnocení je <strong className="text-text">anonymní</strong> a
+                      pomáhá zjistit, kdo hrál férově.
+                    </p>
+                    <p className="text-accent">
+                      Průměrné hodnocení se zobrazí ve výsledkové tabulce.
+                    </p>
+                    <div className="mt-3 pt-3 border-t border-line">
+                      <p className="font-bold text-text mb-2">Hodnocení:</p>
+                      <ul className="space-y-1 text-sm">
+                        <li>⭐⭐⭐⭐⭐ (5) - Výborný!</li>
+                        <li>⭐⭐⭐⭐ (4) - Dobrý</li>
+                        <li>⭐⭐⭐ (3) - OK</li>
+                        <li>⭐⭐ (2) - Slabší</li>
+                        <li>⭐ (1) - Nefér</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-surface-elevated rounded-lg">
+                  <h3 className="text-xl font-bold text-text mb-3">
+                    🏆 Achievementy
+                  </h3>
+                  <ul className="space-y-2 text-text-dim">
+                    <li>⭐ <strong>1 bod</strong> - První bod!</li>
+                    <li>⭐ <strong>3 body</strong> - Jede to!</li>
+                    <li>🔥 <strong>5 bodů</strong> - Bomba!</li>
+                    <li>💎 <strong>10 bodů</strong> - Šampion!</li>
+                    <li>👑 <strong>15 bodů</strong> - Legenda!</li>
+                    <li>🏆 <strong>20 bodů</strong> - Mistr světa!</li>
+                  </ul>
+                </div>
+
+                <div className="p-4 bg-accent/10 border border-accent rounded-lg">
+                  <h3 className="text-xl font-bold text-text mb-3">
+                    💡 Tipy pro fér hru
+                  </h3>
+                  <ul className="space-y-2 text-text-dim">
+                    <li>• Nezbytně žluté = platí (ne oranžové, ne zelenkavé)</li>
+                    <li>• Taxi počítá, pokud je žluté</li>
+                    <li>• Když si nejsi jistý, radši to neber</li>
+                    <li>• Používej Challenge systém při pochybnostech</li>
+                    <li>• Hraj fér a bav se! 🎮✨</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Support Modal */}
       {showSupport && (
         <>
@@ -283,22 +403,23 @@ export default function GameMenu({ onNewGame, onShare, onEndGame, gameStatus }: 
                     📱 Naskenuj QR kód
                   </h3>
                   <div className="flex justify-center mb-4">
-                    <div className="w-64 h-64 bg-bg rounded-lg border-2 border-line flex items-center justify-center">
-                      <div className="text-center p-4">
-                        <p className="text-6xl mb-2">📱</p>
-                        <p className="text-sm font-bold text-text-muted">
-                          QR kód platby
-                        </p>
-                        <p className="text-xs text-text-muted mt-2">
-                          (přidej obrázek do /public/qr-code.png)
-                        </p>
-                      </div>
+                    <div className="w-64 h-64 bg-bg rounded-lg border-2 border-line flex items-center justify-center overflow-hidden">
+                      <Image
+                        src="/QR.jpg"
+                        alt="QR kód pro platbu"
+                        width={256}
+                        height={256}
+                        className="w-full h-full object-contain p-2"
+                      />
                     </div>
                   </div>
                   <div className="text-center">
                     <p className="text-sm font-bold text-text-dim">
                       Číslo účtu:{' '}
-                      <span className="text-accent">XXXX-XXXXXX/XXXX</span>
+                      <span className="text-accent">5934865043/0800</span>
+                    </p>
+                    <p className="text-xs text-text-muted mt-2">
+                      Michal Bürgermeister
                     </p>
                   </div>
                 </div>

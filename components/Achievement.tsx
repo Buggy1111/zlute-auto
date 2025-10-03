@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Star, Flame, Gem, Crown, Award } from 'lucide-react';
+import { Trophy, Star, Flame, Gem, Crown } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
 interface AchievementProps {
@@ -19,11 +19,11 @@ interface Achievement {
 
 const ACHIEVEMENTS: Achievement[] = [
   { score: 1, title: 'První bod!', icon: Star, message: 'Výborný začátek!' },
-  { score: 5, title: '5 bodů!', icon: Star, message: 'Jede to!' },
-  { score: 10, title: '10 bodů!', icon: Flame, message: 'Bomba!' },
-  { score: 20, title: '20 bodů!', icon: Gem, message: 'Šampion!' },
-  { score: 50, title: '50 bodů!', icon: Crown, message: 'Legenda!' },
-  { score: 100, title: '100 bodů!', icon: Trophy, message: 'Mistr světa!' },
+  { score: 3, title: '3 body!', icon: Star, message: 'Jede to!' },
+  { score: 5, title: '5 bodů!', icon: Flame, message: 'Bomba!' },
+  { score: 10, title: '10 bodů!', icon: Gem, message: 'Šampion!' },
+  { score: 15, title: '15 bodů!', icon: Crown, message: 'Legenda!' },
+  { score: 20, title: '20 bodů!', icon: Trophy, message: 'Mistr světa!' },
 ];
 
 export default function Achievement({ score, playerName }: AchievementProps) {
