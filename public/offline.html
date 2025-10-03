@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - Žluté Auto</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0B0F14 0%, #1a1f2e 100%);
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      text-align: center;
+      max-width: 400px;
+    }
+    .car-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+      filter: sepia(100%) saturate(400%) brightness(100%) hue-rotate(-10deg);
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+    h1 {
+      color: #FFE81A;
+      font-size: 2.5em;
+      margin-bottom: 15px;
+      text-shadow:
+        0 0 20px rgba(255, 232, 26, 0.5),
+        0 0 40px rgba(255, 232, 26, 0.3);
+      animation: glow 2s ease-in-out infinite;
+    }
+    @keyframes glow {
+      0%, 100% { text-shadow: 0 0 20px rgba(255, 232, 26, 0.5); }
+      50% { text-shadow: 0 0 30px rgba(255, 232, 26, 0.8), 0 0 60px rgba(255, 232, 26, 0.5); }
+    }
+    p {
+      color: #b0b0b0;
+      line-height: 1.8;
+      margin-bottom: 15px;
+      font-size: 1.1em;
+    }
+    .highlight {
+      color: #FFE81A;
+      font-weight: bold;
+    }
+    .retry-btn {
+      background: #FFE81A;
+      color: #0B0F14;
+      border: none;
+      padding: 14px 35px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 0 20px rgba(255, 232, 26, 0.3);
+      margin-top: 10px;
+    }
+    .retry-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(255, 232, 26, 0.5);
+    }
+    .retry-btn:active {
+      transform: scale(0.98);
+    }
+    .status {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255, 232, 26, 0.1);
+      border: 1px solid rgba(255, 232, 26, 0.3);
+      border-radius: 8px;
+      font-size: 0.9em;
+      color: #d0d0d0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="car-icon">🚗</div>
+    <h1>Jsi offline</h1>
+    <p>
+      <span class="highlight">Žluté Auto</span> potřebuje internetové připojení
+      pro real-time multiplayer funkcionalitu.
+    </p>
+    <p>
+      Zkontroluj své připojení a zkus to znovu.
+    </p>
+    <button class="retry-btn" onclick="window.location.reload()">
+      🔄 Zkusit znovu
+    </button>
+    <div class="status">
+      💡 Tip: Hra funguje nejlépe na Wi-Fi nebo mobilních datech
+    </div>
+  </div>
+</body>
+</html>
