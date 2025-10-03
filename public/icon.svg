@@ -1,0 +1,39 @@
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Yellow gradient background -->
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="256" fill="url(#grad)"/>
+
+  <!-- Car shape (simple) -->
+  <g transform="translate(256, 256)">
+    <!-- Car body -->
+    <rect x="-120" y="-40" width="240" height="80" rx="15" fill="#FFEB3B"/>
+
+    <!-- Car roof -->
+    <path d="M -80,-40 L -60,-80 L 60,-80 L 80,-40 Z" fill="#FFF8DC"/>
+
+    <!-- Windows -->
+    <rect x="-70" y="-70" width="50" height="25" rx="5" fill="#87CEEB" opacity="0.7"/>
+    <rect x="20" y="-70" width="50" height="25" rx="5" fill="#87CEEB" opacity="0.7"/>
+
+    <!-- Wheels -->
+    <circle cx="-70" cy="40" r="20" fill="#333"/>
+    <circle cx="70" cy="40" r="20" fill="#333"/>
+    <circle cx="-70" cy="40" r="10" fill="#888"/>
+    <circle cx="70" cy="40" r="10" fill="#888"/>
+
+    <!-- Headlight -->
+    <circle cx="110" cy="-10" r="8" fill="#FFF" opacity="0.9"/>
+  </g>
+
+  <!-- Text -->
+  <text x="256" y="450" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="#333">
+    Žluté Auto
+  </text>
+</svg>
