@@ -22,7 +22,7 @@ export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
       {/* Menu Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 right-4 z-50 w-12 h-12 card flex items-center justify-center hover:border-accent transition-colors"
+        className="fixed top-6 right-4 z-50 w-12 h-12 card flex items-center justify-center hover:border-accent transition-colors sm:top-4"
         aria-label="Menu"
       >
         {isOpen ? (
@@ -368,7 +368,7 @@ export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
             <div
-              className="card p-8 max-w-lg w-full pointer-events-auto"
+              className="card p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto pointer-events-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-6">
