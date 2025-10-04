@@ -44,27 +44,27 @@ export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
 
       {/* Menu Panel */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 max-w-[90vw] bg-surface border-l border-line z-40 transition-transform duration-300 ${
+        className={`fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-surface border-l border-line z-40 transition-transform duration-300 ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="p-6 h-full flex flex-col">
-          <h2 className="text-2xl font-bold neon-text mb-6">Menu</h2>
+        <div className="p-4 sm:p-6 h-full flex flex-col">
+          <h2 className="text-xl sm:text-2xl font-bold neon-text mb-4 sm:mb-6">Menu</h2>
 
-          <div className="space-y-3 flex-1">
+          <div className="space-y-2 sm:space-y-3 flex-1 overflow-y-auto">
             {/* New Game */}
             <button
               onClick={() => {
                 onNewGame();
                 setIsOpen(false);
               }}
-              className="w-full card p-4 hover:border-accent transition-colors text-left"
+              className="w-full card p-3 sm:p-4 hover:border-accent transition-colors text-left"
             >
-              <div className="flex items-center gap-3">
-                <Plus className="w-5 h-5 text-accent" />
-                <div>
-                  <h3 className="font-bold text-text">Nová hra</h3>
-                  <p className="text-sm text-text-dim">Začít znovu</p>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-accent flex-shrink-0" />
+                <div className="min-w-0">
+                  <h3 className="font-bold text-text text-sm sm:text-base">Nová hra</h3>
+                  <p className="text-xs sm:text-sm text-text-dim">Začít znovu</p>
                 </div>
               </div>
             </button>
@@ -75,13 +75,13 @@ export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
                 onShare();
                 setIsOpen(false);
               }}
-              className="w-full card p-4 hover:border-accent transition-colors text-left"
+              className="w-full card p-3 sm:p-4 hover:border-accent transition-colors text-left"
             >
-              <div className="flex items-center gap-3">
-                <Share2 className="w-5 h-5 text-accent" />
-                <div>
-                  <h3 className="font-bold text-text">Sdílet hru</h3>
-                  <p className="text-sm text-text-dim">Pošli link kamarádům</p>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Share2 className="w-4 h-4 sm:w-5 sm:h-5 text-accent flex-shrink-0" />
+                <div className="min-w-0">
+                  <h3 className="font-bold text-text text-sm sm:text-base">Sdílet hru</h3>
+                  <p className="text-xs sm:text-sm text-text-dim">Pošli link kamarádům</p>
                 </div>
               </div>
             </button>
@@ -89,13 +89,13 @@ export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
             {/* About */}
             <button
               onClick={() => setShowAbout(true)}
-              className="w-full card p-4 hover:border-accent transition-colors text-left"
+              className="w-full card p-3 sm:p-4 hover:border-accent transition-colors text-left"
             >
-              <div className="flex items-center gap-3">
-                <BookOpen className="w-5 h-5 text-accent" />
-                <div>
-                  <h3 className="font-bold text-text">O hře</h3>
-                  <p className="text-sm text-text-dim">Proč vznikla</p>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-accent flex-shrink-0" />
+                <div className="min-w-0">
+                  <h3 className="font-bold text-text text-sm sm:text-base">O hře</h3>
+                  <p className="text-xs sm:text-sm text-text-dim">Proč vznikla</p>
                 </div>
               </div>
             </button>
@@ -103,13 +103,13 @@ export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
             {/* How to Play */}
             <button
               onClick={() => setShowHowToPlay(true)}
-              className="w-full card p-4 hover:border-accent transition-colors text-left"
+              className="w-full card p-3 sm:p-4 hover:border-accent transition-colors text-left"
             >
-              <div className="flex items-center gap-3">
-                <Info className="w-5 h-5 text-accent" />
-                <div>
-                  <h3 className="font-bold text-text">Jak hrát</h3>
-                  <p className="text-sm text-text-dim">Pravidla a mechaniky</p>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Info className="w-4 h-4 sm:w-5 sm:h-5 text-accent flex-shrink-0" />
+                <div className="min-w-0">
+                  <h3 className="font-bold text-text text-sm sm:text-base">Jak hrát</h3>
+                  <p className="text-xs sm:text-sm text-text-dim">Pravidla a mechaniky</p>
                 </div>
               </div>
             </button>
@@ -117,13 +117,13 @@ export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
             {/* Stats */}
             <button
               onClick={() => setShowStats(true)}
-              className="w-full card p-4 hover:border-accent transition-colors text-left"
+              className="w-full card p-3 sm:p-4 hover:border-accent transition-colors text-left"
             >
-              <div className="flex items-center gap-3">
-                <BarChart3 className="w-5 h-5 text-accent" />
-                <div>
-                  <h3 className="font-bold text-text">Moje statistiky</h3>
-                  <p className="text-sm text-text-dim">Tvoje herní výsledky</p>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-accent flex-shrink-0" />
+                <div className="min-w-0">
+                  <h3 className="font-bold text-text text-sm sm:text-base">Moje statistiky</h3>
+                  <p className="text-xs sm:text-sm text-text-dim">Tvoje herní výsledky</p>
                 </div>
               </div>
             </button>
@@ -131,19 +131,19 @@ export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
             {/* Support */}
             <button
               onClick={() => setShowSupport(true)}
-              className="w-full card p-4 hover:border-accent transition-colors text-left"
+              className="w-full card p-3 sm:p-4 hover:border-accent transition-colors text-left"
             >
-              <div className="flex items-center gap-3">
-                <Coffee className="w-5 h-5 text-accent" />
-                <div>
-                  <h3 className="font-bold text-text">Podpoř vývojáře</h3>
-                  <p className="text-sm text-text-dim">Pomoz mi tvořit další projekty</p>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Coffee className="w-4 h-4 sm:w-5 sm:h-5 text-accent flex-shrink-0" />
+                <div className="min-w-0">
+                  <h3 className="font-bold text-text text-sm sm:text-base">Podpoř vývojáře</h3>
+                  <p className="text-xs sm:text-sm text-text-dim">Pomoz mi tvořit další projekty</p>
                 </div>
               </div>
             </button>
           </div>
 
-          <div className="mt-auto pt-6 border-t border-line">
+          <div className="mt-auto pt-4 sm:pt-6 border-t border-line">
             <p className="text-center text-xs text-text-muted">
               Žluté Auto v1.0
               <br />
