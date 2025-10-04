@@ -54,6 +54,34 @@ export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
           <h2 className="text-xl sm:text-2xl font-bold neon-text mb-4 sm:mb-6">Menu</h2>
 
           <div className="space-y-2 sm:space-y-3 flex-1 overflow-y-auto">
+            {/* About */}
+            <button
+              onClick={() => setShowAbout(true)}
+              className="w-full card p-3 sm:p-4 hover:border-accent transition-colors text-left"
+            >
+              <div className="flex items-center gap-2 sm:gap-3">
+                <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-accent flex-shrink-0" />
+                <div className="min-w-0">
+                  <h3 className="font-bold text-text text-sm sm:text-base">O hře</h3>
+                  <p className="text-xs sm:text-sm text-text-dim">Proč vznikla</p>
+                </div>
+              </div>
+            </button>
+
+            {/* How to Play */}
+            <button
+              onClick={() => setShowHowToPlay(true)}
+              className="w-full card p-3 sm:p-4 hover:border-accent transition-colors text-left"
+            >
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Info className="w-4 h-4 sm:w-5 sm:h-5 text-accent flex-shrink-0" />
+                <div className="min-w-0">
+                  <h3 className="font-bold text-text text-sm sm:text-base">Jak hrát</h3>
+                  <p className="text-xs sm:text-sm text-text-dim">Pravidla a mechaniky</p>
+                </div>
+              </div>
+            </button>
+
             {/* New Game */}
             <button
               onClick={() => {
@@ -88,6 +116,20 @@ export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
               </div>
             </button>
 
+            {/* Stats */}
+            <button
+              onClick={() => setShowStats(true)}
+              className="w-full card p-3 sm:p-4 hover:border-accent transition-colors text-left"
+            >
+              <div className="flex items-center gap-2 sm:gap-3">
+                <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-accent flex-shrink-0" />
+                <div className="min-w-0">
+                  <h3 className="font-bold text-text text-sm sm:text-base">Moje statistiky</h3>
+                  <p className="text-xs sm:text-sm text-text-dim">Tvoje herní výsledky</p>
+                </div>
+              </div>
+            </button>
+
             {/* Navigation */}
             <button
               onClick={() => setShowNavigation(true)}
@@ -102,47 +144,8 @@ export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
               </div>
             </button>
 
-            {/* About */}
-            <button
-              onClick={() => setShowAbout(true)}
-              className="w-full card p-3 sm:p-4 hover:border-accent transition-colors text-left"
-            >
-              <div className="flex items-center gap-2 sm:gap-3">
-                <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-accent flex-shrink-0" />
-                <div className="min-w-0">
-                  <h3 className="font-bold text-text text-sm sm:text-base">O hře</h3>
-                  <p className="text-xs sm:text-sm text-text-dim">Proč vznikla</p>
-                </div>
-              </div>
-            </button>
-
-            {/* How to Play */}
-            <button
-              onClick={() => setShowHowToPlay(true)}
-              className="w-full card p-3 sm:p-4 hover:border-accent transition-colors text-left"
-            >
-              <div className="flex items-center gap-2 sm:gap-3">
-                <Info className="w-4 h-4 sm:w-5 sm:h-5 text-accent flex-shrink-0" />
-                <div className="min-w-0">
-                  <h3 className="font-bold text-text text-sm sm:text-base">Jak hrát</h3>
-                  <p className="text-xs sm:text-sm text-text-dim">Pravidla a mechaniky</p>
-                </div>
-              </div>
-            </button>
-
-            {/* Stats */}
-            <button
-              onClick={() => setShowStats(true)}
-              className="w-full card p-3 sm:p-4 hover:border-accent transition-colors text-left"
-            >
-              <div className="flex items-center gap-2 sm:gap-3">
-                <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-accent flex-shrink-0" />
-                <div className="min-w-0">
-                  <h3 className="font-bold text-text text-sm sm:text-base">Moje statistiky</h3>
-                  <p className="text-xs sm:text-sm text-text-dim">Tvoje herní výsledky</p>
-                </div>
-              </div>
-            </button>
+            {/* Divider */}
+            <div className="border-t border-line my-2 sm:my-3"></div>
 
             {/* Support */}
             <button
