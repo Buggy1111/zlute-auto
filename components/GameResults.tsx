@@ -101,7 +101,7 @@ export default function GameResults({ game, events, currentPlayerId }: GameResul
           <>
             <h2 className="text-4xl font-bold neon-text mb-2">Remíza!</h2>
             <div className="space-y-2 mb-2">
-              {winners.map((w, idx) => (
+              {winners.map((w) => (
                 <p key={w.id} className="text-4xl font-bold" style={{ color: w.color }}>
                   {w.name}
                 </p>
@@ -194,11 +194,11 @@ export default function GameResults({ game, events, currentPlayerId }: GameResul
           </div>
 
           <div className="grid gap-3">
-            {allAchievements.map((item, idx) => {
+            {allAchievements.map((item) => {
               const Icon = item.achievement.icon;
               return (
                 <div
-                  key={idx}
+                  key={`${item.player.id}-${item.achievement.score}`}
                   className="p-4 bg-surface-elevated rounded-lg border border-line flex items-center gap-4"
                 >
                   <Icon className="w-8 h-8 text-accent neon-glow" />

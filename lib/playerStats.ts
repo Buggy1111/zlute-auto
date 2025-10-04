@@ -1,7 +1,15 @@
 /**
- * Player Statistics - localStorage utility
- * Tracks personal game history and stats across sessions
+ * Player Statistics - Firebase + localStorage hybrid
+ * Tracks personal game history and stats across sessions and devices
  */
+
+import {
+  doc,
+  setDoc,
+  getDoc,
+  onSnapshot,
+} from 'firebase/firestore';
+import { db } from './firebase';
 
 export interface GameHistoryEntry {
   gameId: string;
@@ -14,50 +22,177 @@ export interface GameHistoryEntry {
 }
 
 export interface PlayerStats {
+  playerId: string; // Unique ID per device/player
   playerName: string;
   totalGames: number;
   totalPoints: number;
   games: GameHistoryEntry[];
+  lastUpdated: number;
 }
 
 const STORAGE_KEY = 'yellowcar_player_stats';
+const PLAYER_ID_KEY = 'yellowcar_player_id';
 
 /**
- * Get player stats from localStorage
+ * Get or create unique player ID for this device
+ */
+function getPlayerId(): string {
+  if (typeof window === 'undefined') return '';
+
+  let playerId = localStorage.getItem(PLAYER_ID_KEY);
+  if (!playerId) {
+    playerId = `player_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    localStorage.setItem(PLAYER_ID_KEY, playerId);
+  }
+  return playerId;
+}
+
+/**
+ * Get player stats from localStorage (fallback/cache)
  */
 export function getPlayerStats(): PlayerStats {
   if (typeof window === 'undefined') {
-    return { playerName: '', totalGames: 0, totalPoints: 0, games: [] };
+    return {
+      playerId: '',
+      playerName: '',
+      totalGames: 0,
+      totalPoints: 0,
+      games: [],
+      lastUpdated: 0,
+    };
   }
+
+  const playerId = getPlayerId();
 
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     if (!data) {
-      return { playerName: '', totalGames: 0, totalPoints: 0, games: [] };
+      return {
+        playerId,
+        playerName: '',
+        totalGames: 0,
+        totalPoints: 0,
+        games: [],
+        lastUpdated: 0,
+      };
     }
-    return JSON.parse(data);
+    const stats = JSON.parse(data);
+    // Ensure playerId is set
+    stats.playerId = playerId;
+    return stats;
   } catch {
-    return { playerName: '', totalGames: 0, totalPoints: 0, games: [] };
+    return {
+      playerId,
+      playerName: '',
+      totalGames: 0,
+      totalPoints: 0,
+      games: [],
+      lastUpdated: 0,
+    };
   }
 }
 
 /**
- * Save player stats to localStorage
+ * Save player stats to localStorage (cache)
  */
-function savePlayerStats(stats: PlayerStats): void {
+function savePlayerStatsLocal(stats: PlayerStats): void {
   if (typeof window === 'undefined') return;
 
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
-  } catch (error) {
+  } catch {
     // Silent fail if localStorage is full or disabled
   }
 }
 
 /**
+ * Save player stats to Firebase
+ */
+async function savePlayerStatsFirebase(stats: PlayerStats): Promise<void> {
+  if (!stats.playerId) return;
+
+  try {
+    const statsRef = doc(db, 'playerStats', stats.playerId);
+    await setDoc(statsRef, {
+      ...stats,
+      lastUpdated: Date.now(),
+    });
+  } catch (error) {
+    console.error('Error saving stats to Firebase:', error);
+  }
+}
+
+/**
+ * Save player stats to both localStorage and Firebase
+ */
+async function savePlayerStats(stats: PlayerStats): Promise<void> {
+  stats.lastUpdated = Date.now();
+  savePlayerStatsLocal(stats);
+  await savePlayerStatsFirebase(stats);
+}
+
+/**
+ * Load player stats from Firebase (with localStorage fallback)
+ */
+export async function loadPlayerStats(): Promise<PlayerStats> {
+  const playerId = getPlayerId();
+  if (!playerId) return getPlayerStats();
+
+  try {
+    const statsRef = doc(db, 'playerStats', playerId);
+    const statsSnap = await getDoc(statsRef);
+
+    if (statsSnap.exists()) {
+      const firebaseStats = statsSnap.data() as PlayerStats;
+      // Update localStorage cache
+      savePlayerStatsLocal(firebaseStats);
+      return firebaseStats;
+    }
+  } catch (error) {
+    console.error('Error loading stats from Firebase:', error);
+  }
+
+  // Fallback to localStorage
+  return getPlayerStats();
+}
+
+/**
+ * Subscribe to real-time player stats updates from Firebase
+ */
+export function subscribeToPlayerStats(
+  callback: (stats: PlayerStats) => void
+): () => void {
+  const playerId = getPlayerId();
+  if (!playerId) {
+    callback(getPlayerStats());
+    return () => {};
+  }
+
+  const statsRef = doc(db, 'playerStats', playerId);
+
+  return onSnapshot(
+    statsRef,
+    (snapshot) => {
+      if (snapshot.exists()) {
+        const stats = snapshot.data() as PlayerStats;
+        // Update localStorage cache
+        savePlayerStatsLocal(stats);
+        callback(stats);
+      } else {
+        callback(getPlayerStats());
+      }
+    },
+    (error) => {
+      console.error('Error subscribing to stats:', error);
+      callback(getPlayerStats());
+    }
+  );
+}
+
+/**
  * Record a point for the current game
  */
-export function recordPoint(gameId: string, playerName: string): void {
+export async function recordPoint(gameId: string, playerName: string): Promise<void> {
   const stats = getPlayerStats();
 
   // Find or create game entry
@@ -86,38 +221,60 @@ export function recordPoint(gameId: string, playerName: string): void {
   stats.totalPoints = stats.games.reduce((sum, g) => sum + g.finalScore, 0);
   stats.totalGames = stats.games.length;
 
-  // Keep only last 50 games to prevent localStorage overflow
+  // Keep only last 50 games to prevent overflow
   if (stats.games.length > 50) {
     stats.games = stats.games.slice(-50);
   }
 
-  savePlayerStats(stats);
+  await savePlayerStats(stats);
 }
 
 /**
  * Finalize game with placement info
  */
-export function finalizeGame(
+export async function finalizeGame(
   gameId: string,
   placement: number,
   totalPlayers: number
-): void {
+): Promise<void> {
   const stats = getPlayerStats();
   const gameEntry = stats.games.find(g => g.gameId === gameId);
 
   if (gameEntry) {
     gameEntry.placement = placement;
     gameEntry.totalPlayers = totalPlayers;
-    savePlayerStats(stats);
+    await savePlayerStats(stats);
   }
 }
 
 /**
- * Clear all player stats
+ * Clear all player stats (both localStorage and Firebase)
  */
-export function clearPlayerStats(): void {
+export async function clearPlayerStats(): Promise<void> {
   if (typeof window === 'undefined') return;
+
+  const playerId = getPlayerId();
+
+  // Clear localStorage
   localStorage.removeItem(STORAGE_KEY);
+
+  // Clear Firebase
+  if (playerId) {
+    try {
+      const statsRef = doc(db, 'playerStats', playerId);
+      const emptyStats: PlayerStats = {
+        playerId,
+        playerName: '',
+        totalGames: 0,
+        totalPoints: 0,
+        games: [],
+        lastUpdated: Date.now(),
+      };
+      await setDoc(statsRef, emptyStats);
+    } catch (error) {
+      console.error('Error clearing Firebase stats:', error);
+    }
+  }
 }
 
 /**

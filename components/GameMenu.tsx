@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { Menu, X, Share2, Plus, Coffee, BookOpen, Info, BarChart3 } from 'lucide-react';
+import { Menu, X, Share2, Plus, Coffee, BookOpen, Info, BarChart3, MapPin } from 'lucide-react';
 import PlayerStats from './PlayerStats';
+import NavigationModal from './NavigationModal';
 
 interface GameMenuProps {
   onNewGame: () => void;
@@ -18,6 +19,7 @@ export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
   const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [showNavigation, setShowNavigation] = useState(false);
 
   return (
     <>
@@ -82,6 +84,20 @@ export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
                 <div className="min-w-0">
                   <h3 className="font-bold text-text text-sm sm:text-base">Sdílet hru</h3>
                   <p className="text-xs sm:text-sm text-text-dim">Pošli link kamarádům</p>
+                </div>
+              </div>
+            </button>
+
+            {/* Navigation */}
+            <button
+              onClick={() => setShowNavigation(true)}
+              className="w-full card p-3 sm:p-4 hover:border-accent transition-colors text-left"
+            >
+              <div className="flex items-center gap-2 sm:gap-3">
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-accent flex-shrink-0" />
+                <div className="min-w-0">
+                  <h3 className="font-bold text-text text-sm sm:text-base">Navigace</h3>
+                  <p className="text-xs sm:text-sm text-text-dim">Otevři mapy a hraj dál</p>
                 </div>
               </div>
             </button>
@@ -454,6 +470,9 @@ export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
 
       {/* Stats Modal */}
       {showStats && <PlayerStats onClose={() => setShowStats(false)} />}
+
+      {/* Navigation Modal */}
+      {showNavigation && <NavigationModal onClose={() => setShowNavigation(false)} />}
     </>
   );
 }

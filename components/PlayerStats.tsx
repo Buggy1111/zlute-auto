@@ -1,6 +1,6 @@
 'use client';
 
-import { getCalculatedStats, clearPlayerStats } from '@/lib/playerStats';
+import { getCalculatedStats, clearPlayerStats, subscribeToPlayerStats } from '@/lib/playerStats';
 import { X, Trophy, Target, TrendingUp, Award, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -13,12 +13,17 @@ export default function PlayerStats({ onClose }: PlayerStatsProps) {
   const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
-    // Refresh stats when component mounts
-    setStats(getCalculatedStats());
+    // Subscribe to real-time stats updates from Firebase
+    const unsubscribe = subscribeToPlayerStats(() => {
+      const calculated = getCalculatedStats();
+      setStats(calculated);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const handleClear = () => {
-    clearPlayerStats();
+  const handleClear = async () => {
+    await clearPlayerStats();
     setStats(getCalculatedStats());
     setShowConfirm(false);
   };
@@ -76,6 +81,70 @@ export default function PlayerStats({ onClose }: PlayerStatsProps) {
             </div>
           ) : (
             <>
+              {/* Last Game Result - Winner Highlight */}
+              {stats.games.length > 0 && (() => {
+                const lastGame = stats.games
+                  .slice()
+                  .sort((a, b) => b.date - a.date)[0];
+                const isWinner = lastGame.placement === 1;
+                const isTie = lastGame.placement === 1 && lastGame.totalPlayers > 1;
+
+                return (
+                  <div className={`p-6 rounded-lg mb-6 border-2 ${
+                    isWinner
+                      ? 'bg-accent/20 border-accent neon-border'
+                      : 'bg-surface-elevated border-line'
+                  }`}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Trophy className={`w-6 h-6 ${isWinner ? 'text-accent neon-glow' : 'text-text-dim'}`} />
+                      <h3 className="text-lg font-bold text-text">Poslední hra</h3>
+                      <span className="text-sm text-text-dim">
+                        {formatDate(lastGame.date)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-3 mb-1">
+                          <span className="text-4xl">
+                            {getPlacementEmoji(lastGame.placement)}
+                          </span>
+                          <div>
+                            {isWinner ? (
+                              <>
+                                <p className="text-2xl font-bold text-accent neon-text">
+                                  {isTie ? 'Remíza!' : 'Vítěz!'}
+                                </p>
+                                <p className="text-sm text-text-dim">
+                                  {lastGame.playerName}
+                                </p>
+                              </>
+                            ) : (
+                              <>
+                                <p className="text-xl font-bold text-text">
+                                  {lastGame.placement}. místo
+                                </p>
+                                <p className="text-sm text-text-dim">
+                                  {lastGame.playerName}
+                                </p>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-4xl font-bold ${isWinner ? 'text-accent' : 'text-text'}`}>
+                          {lastGame.finalScore}
+                        </p>
+                        <p className="text-sm text-text-dim">
+                          z {lastGame.totalPlayers} hráčů
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Overall Stats */}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="p-4 bg-surface-elevated rounded-lg">
@@ -84,22 +153,6 @@ export default function PlayerStats({ onClose }: PlayerStatsProps) {
                     <h3 className="text-sm text-text-dim">Celkem her</h3>
                   </div>
                   <p className="text-3xl font-bold text-text">{stats.totalGames}</p>
-                </div>
-
-                <div className="p-4 bg-surface-elevated rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Target className="w-5 h-5 text-accent" />
-                    <h3 className="text-sm text-text-dim">Celkem bodů</h3>
-                  </div>
-                  <p className="text-3xl font-bold text-text">{stats.totalPoints}</p>
-                </div>
-
-                <div className="p-4 bg-surface-elevated rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="w-5 h-5 text-accent" />
-                    <h3 className="text-sm text-text-dim">Průměr</h3>
-                  </div>
-                  <p className="text-3xl font-bold text-text">{stats.avgScore}</p>
                 </div>
 
                 <div className="p-4 bg-surface-elevated rounded-lg">
@@ -114,17 +167,53 @@ export default function PlayerStats({ onClose }: PlayerStatsProps) {
                     </span>
                   </p>
                 </div>
+
+                <div className="p-4 bg-surface-elevated rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Target className="w-5 h-5 text-accent" />
+                    <h3 className="text-sm text-text-dim">Celkem bodů</h3>
+                  </div>
+                  <p className="text-3xl font-bold text-text">{stats.totalPoints}</p>
+                </div>
+
+                <div className="p-4 bg-surface-elevated rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="w-5 h-5 text-accent" />
+                    <h3 className="text-sm text-text-dim">Průměr bodů</h3>
+                  </div>
+                  <p className="text-3xl font-bold text-text">{stats.avgScore}</p>
+                </div>
               </div>
 
-              {/* Best Score */}
-              {stats.bestScore > 0 && (
-                <div className="p-4 bg-accent/10 border border-accent rounded-lg mb-6">
-                  <h3 className="text-sm text-text-dim mb-1">🏆 Nejlepší hra</h3>
-                  <p className="text-2xl font-bold text-accent">
-                    {stats.bestScore} bodů
-                  </p>
-                </div>
-              )}
+              {/* Best & Worst Performance */}
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                {stats.bestScore > 0 && (
+                  <div className="p-4 bg-accent/10 border border-accent rounded-lg">
+                    <h3 className="text-sm text-text-dim mb-1 flex items-center gap-1">
+                      <Trophy className="w-4 h-4" />
+                      Nejlepší výkon
+                    </h3>
+                    <p className="text-2xl font-bold text-accent">
+                      {stats.bestScore} bodů
+                    </p>
+                  </div>
+                )}
+
+                {(() => {
+                  const worstScore = Math.min(...stats.games.map(g => g.finalScore));
+                  return worstScore >= 0 && (
+                    <div className="p-4 bg-surface-elevated border border-line rounded-lg">
+                      <h3 className="text-sm text-text-dim mb-1 flex items-center gap-1">
+                        <Target className="w-4 h-4" />
+                        Nejhorší výkon
+                      </h3>
+                      <p className="text-2xl font-bold text-text">
+                        {worstScore} bodů
+                      </p>
+                    </div>
+                  );
+                })()}
+              </div>
 
               {/* Game History */}
               <div className="mb-6">
