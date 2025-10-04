@@ -1,23 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createGame } from '@/lib/game';
 import GameMenu from '@/components/GameMenu';
-import { Car, Trophy, Target } from 'lucide-react';
-import { getCalculatedStats } from '@/lib/playerStats';
+import { Car } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
   const [playerNames, setPlayerNames] = useState(['', '']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [stats, setStats] = useState(getCalculatedStats());
-
-  useEffect(() => {
-    // Refresh stats on mount
-    setStats(getCalculatedStats());
-  }, []);
 
   const handleAddPlayer = () => {
     if (playerNames.length < 8) {
@@ -109,38 +102,6 @@ export default function Home() {
             <p className="text-text-dim text-sm">Získej bod a staň se šampionem!</p>
           </div>
         </div>
-
-        {/* Stats Preview */}
-        {stats.totalGames > 0 && (
-          <div className="card p-6 mb-6">
-            <h2 className="text-lg font-bold text-text mb-4">📊 Tvoje statistiky</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-3 bg-surface-elevated rounded-lg">
-                <div className="flex items-center gap-2 mb-1">
-                  <Trophy className="w-4 h-4 text-accent" />
-                  <p className="text-xs text-text-dim">Her</p>
-                </div>
-                <p className="text-2xl font-bold text-text">{stats.totalGames}</p>
-              </div>
-              <div className="p-3 bg-surface-elevated rounded-lg">
-                <div className="flex items-center gap-2 mb-1">
-                  <Target className="w-4 h-4 text-accent" />
-                  <p className="text-xs text-text-dim">Bodů</p>
-                </div>
-                <p className="text-2xl font-bold text-text">{stats.totalPoints}</p>
-              </div>
-            </div>
-            <p className="text-center text-xs text-text-dim mt-3">
-              Průměr: <span className="text-accent font-bold">{stats.avgScore}</span> bodů/hra
-              {stats.wins > 0 && (
-                <>
-                  {' • '}
-                  <span className="text-success font-bold">{stats.wins}× vítěz</span>
-                </>
-              )}
-            </p>
-          </div>
-        )}
 
         {/* Form */}
         <div className="card p-8 mb-6">
