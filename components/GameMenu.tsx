@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { Menu, X, Share2, Plus, Coffee, BookOpen, Info } from 'lucide-react';
+import { Menu, X, Share2, Plus, Coffee, BookOpen, Info, BarChart3 } from 'lucide-react';
+import PlayerStats from './PlayerStats';
 
 interface GameMenuProps {
   onNewGame: () => void;
@@ -16,13 +17,14 @@ export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
   const [showAbout, setShowAbout] = useState(false);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
+  const [showStats, setShowStats] = useState(false);
 
   return (
     <>
       {/* Menu Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 right-4 z-50 w-12 h-12 card flex items-center justify-center hover:border-accent transition-colors"
+        className="fixed safe-top right-4 z-50 w-12 h-12 card flex items-center justify-center hover:border-accent transition-colors"
         aria-label="Menu"
       >
         {isOpen ? (
@@ -108,6 +110,20 @@ export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
                 <div>
                   <h3 className="font-bold text-text">Jak hrát</h3>
                   <p className="text-sm text-text-dim">Pravidla a mechaniky</p>
+                </div>
+              </div>
+            </button>
+
+            {/* Stats */}
+            <button
+              onClick={() => setShowStats(true)}
+              className="w-full card p-4 hover:border-accent transition-colors text-left"
+            >
+              <div className="flex items-center gap-3">
+                <BarChart3 className="w-5 h-5 text-accent" />
+                <div>
+                  <h3 className="font-bold text-text">Moje statistiky</h3>
+                  <p className="text-sm text-text-dim">Tvoje herní výsledky</p>
                 </div>
               </div>
             </button>
@@ -368,7 +384,7 @@ export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
             <div
-              className="card p-8 max-w-lg w-full pointer-events-auto"
+              className="card p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto pointer-events-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-6">
@@ -435,6 +451,9 @@ export default function GameMenu({ onNewGame, onShare }: GameMenuProps) {
           </div>
         </>
       )}
+
+      {/* Stats Modal */}
+      {showStats && <PlayerStats onClose={() => setShowStats(false)} />}
     </>
   );
 }

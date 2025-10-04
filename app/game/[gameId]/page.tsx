@@ -14,6 +14,7 @@ import { playSound } from '@/lib/sounds';
 import { endGame, createChallenge, voteOnChallenge, resolveChallenge, subscribeToActiveChallenge } from '@/lib/game';
 import type { Challenge } from '@/types/game';
 import { Car } from 'lucide-react';
+import { recordPoint } from '@/lib/playerStats';
 
 export default function GamePage() {
   const params = useParams();
@@ -96,8 +97,13 @@ export default function GamePage() {
         navigator.vibrate([100, 50, 100]);
       }
 
-      // Get the latest event ID and show challenge toast
+      // Record point in localStorage if this is current player
       const player = game.players[playerId];
+      if (player && playerId === currentPlayerId) {
+        recordPoint(gameId, player.name);
+      }
+
+      // Get the latest event ID and show challenge toast
       if (player && events.length > 0) {
         const latestEvent = events[0]; // Events are sorted desc
         setLastEventId(latestEvent.id);
