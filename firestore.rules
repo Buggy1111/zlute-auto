@@ -121,5 +121,35 @@ service cloud.firestore {
         allow delete: if false;
       }
     }
+
+    // Player Statistics collection
+    match /playerStats/{playerId} {
+      // Anyone can read their own stats (using client-side playerId)
+      allow read: if true;
+
+      // Anyone can create their stats
+      allow create: if request.resource.data.keys().hasAll(['playerId', 'playerName', 'totalGames', 'totalPoints', 'games', 'lastUpdated'])
+        && request.resource.data.playerId == playerId
+        && request.resource.data.totalGames is int
+        && request.resource.data.totalGames >= 0
+        && request.resource.data.totalPoints is int
+        && request.resource.data.totalPoints >= 0
+        && request.resource.data.games is list
+        && request.resource.data.lastUpdated is int;
+
+      // Anyone can update their own stats
+      allow update: if request.resource.data.playerId == resource.data.playerId
+        && request.resource.data.playerId == playerId
+        && request.resource.data.totalGames is int
+        && request.resource.data.totalGames >= 0
+        && request.resource.data.totalPoints is int
+        && request.resource.data.totalPoints >= 0
+        && request.resource.data.games is list
+        && request.resource.data.lastUpdated is int
+        && request.resource.data.lastUpdated > resource.data.lastUpdated; // Must update timestamp
+
+      // Stats can be deleted (when clearing)
+      allow delete: if true;
+    }
   }
 }
