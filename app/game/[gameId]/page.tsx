@@ -9,12 +9,14 @@ import GameTimer from '@/components/GameTimer';
 import GameResults from '@/components/GameResults';
 import ChallengeToast from '@/components/ChallengeToast';
 import ChallengeVoting from '@/components/ChallengeVoting';
+import BackgroundIndicator from '@/components/BackgroundIndicator';
 import { useState, useEffect } from 'react';
 import { playSound } from '@/lib/sounds';
 import { endGame, createChallenge, voteOnChallenge, resolveChallenge, subscribeToActiveChallenge } from '@/lib/game';
 import type { Challenge } from '@/types/game';
 import { Car } from 'lucide-react';
 import { recordPoint } from '@/lib/playerStats';
+import { requestWakeLock, releaseWakeLock, setupWakeLockReacquisition } from '@/lib/wakeLock';
 
 export default function GamePage() {
   const params = useParams();
@@ -49,6 +51,22 @@ export default function GamePage() {
 
   const isPlaying = game?.status === 'playing';
   const isFinished = game?.status === 'finished';
+
+  // Wake Lock: Keep screen on during gameplay
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    // Request wake lock when game starts
+    requestWakeLock();
+
+    // Setup reacquisition when page becomes visible again
+    const cleanup = setupWakeLockReacquisition();
+
+    return () => {
+      cleanup();
+      releaseWakeLock();
+    };
+  }, [isPlaying]);
 
   // Subscribe to active challenges
   useEffect(() => {
@@ -284,6 +302,9 @@ export default function GamePage() {
         onEndGame={handleEndGame}
         gameStatus={game.status}
       />
+
+      {/* Background Indicator */}
+      {isPlaying && <BackgroundIndicator />}
 
       {/* Player Selector - only show during playing */}
       {isPlaying && game && (

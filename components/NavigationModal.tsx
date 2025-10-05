@@ -10,38 +10,56 @@ const NAVIGATION_APPS = [
   {
     name: 'Google Maps',
     icon: '🗺️',
-    url: 'https://www.google.com/maps',
+    // Universal link that works on both mobile and desktop
+    // On mobile with Google Maps app: Opens the app directly
+    // On mobile without app or desktop: Opens web version
+    url: 'https://maps.google.com/',
     color: '#4285F4',
   },
   {
     name: 'Waze',
     icon: '🚗',
-    url: 'https://www.waze.com/live-map',
+    // Waze deep link - opens Waze app if installed, otherwise web
+    // waze:// protocol automatically opens the Waze app on mobile
+    url: 'https://waze.com/ul',
     color: '#33CCFF',
   },
   {
     name: 'Mapy.cz',
     icon: '🇨🇿',
+    // Mapy.cz universal link
     url: 'https://mapy.cz',
     color: '#FF6B35',
   },
   {
     name: 'Apple Maps',
     icon: '🍎',
-    url: 'https://maps.apple.com',
+    // Apple Maps universal link - opens Maps app on iOS/macOS
+    // Falls back to web on other platforms
+    url: 'https://maps.apple.com/',
     color: '#007AFF',
   },
 ];
 
 export default function NavigationModal({ onClose }: NavigationModalProps) {
   const handleNavigationClick = (url: string) => {
-    // Open navigation in new tab/window
-    window.open(url, '_blank', 'noopener,noreferrer');
+    // For mobile devices, try to open the app directly using window.location
+    // This works better for deep links than window.open
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-    // Show instructions after short delay
+    if (isMobile) {
+      // On mobile, use window.location for better deep link support
+      // This allows the OS to intercept and open the native app
+      window.location.href = url;
+    } else {
+      // On desktop, open in new tab
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    // Close modal after short delay to let the user see the app opening
     setTimeout(() => {
-      // Keep modal open to show instructions
-    }, 100);
+      onClose();
+    }, 500);
   };
 
   return (
@@ -86,7 +104,7 @@ export default function NavigationModal({ onClose }: NavigationModalProps) {
                     <span className="text-3xl">{app.icon}</span>
                     <div className="text-left">
                       <p className="font-bold text-text">{app.name}</p>
-                      <p className="text-xs text-text-dim">Otevřít navigaci</p>
+                      <p className="text-xs text-text-dim">Otevřít aplikaci</p>
                     </div>
                   </div>
                 </button>
@@ -96,56 +114,43 @@ export default function NavigationModal({ onClose }: NavigationModalProps) {
 
           {/* Instructions */}
           <div className="space-y-4">
-            {/* Android Instructions */}
-            <div className="p-4 bg-success/10 border border-success/30 rounded-lg">
-              <div className="flex items-start gap-3 mb-3">
-                <Smartphone className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-                <h3 className="text-lg font-bold text-success">📱 Android</h3>
-              </div>
-              <ol className="space-y-2 text-sm text-text-dim ml-8">
-                <li className="flex gap-2">
-                  <span className="text-success font-bold">1.</span>
-                  <span>Otevře se navigace v nové kartě</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-success font-bold">2.</span>
-                  <span>Stiskni tlačítko <strong className="text-text">&ldquo;Poslední aplikace&rdquo;</strong> (čtverec)</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-success font-bold">3.</span>
-                  <span>Klikni na ikonu hry nahoře a vyber <strong className="text-text">&ldquo;Rozdělená obrazovka&rdquo;</strong></span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-success font-bold">4.</span>
-                  <span>Navigace nahoře 🗺️, hra dole 🎮</span>
-                </li>
-              </ol>
-            </div>
-
-            {/* iOS Instructions */}
+            {/* How it works */}
             <div className="p-4 bg-accent/10 border border-accent/30 rounded-lg">
               <div className="flex items-start gap-3 mb-3">
-                <Smartphone className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
-                <h3 className="text-lg font-bold text-accent">📱 iPhone/iPad</h3>
+                <NavigationIcon className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                <h3 className="text-lg font-bold text-accent">Jak to funguje?</h3>
               </div>
               <ol className="space-y-2 text-sm text-text-dim ml-8">
                 <li className="flex gap-2">
                   <span className="text-accent font-bold">1.</span>
-                  <span>Otevře se navigace v nové kartě</span>
+                  <span>Klikni na svou oblíbenou navigační aplikaci</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-accent font-bold">2.</span>
-                  <span>Přejeď zpět do hry (swipe zespodu)</span>
+                  <span>Navigace se <strong className="text-text">otevře automaticky</strong> (aplikace nebo web)</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-accent font-bold">3.</span>
-                  <span>Hra běží na pozadí - <strong className="text-text">všechny body se ukládají!</strong></span>
+                  <span>Na mobilu: Přepínej mezi navigací a hrou pomocí přepínače aplikací</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-accent font-bold">4.</span>
-                  <span>Přepínej mezi navigací a hrou dle potřeby</span>
+                  <span>Hra běží na pozadí - <strong className="text-text">všechny body se ukládají!</strong></span>
                 </li>
               </ol>
+            </div>
+
+            {/* Android Split Screen Tip */}
+            <div className="p-4 bg-success/10 border border-success/30 rounded-lg">
+              <div className="flex items-start gap-3 mb-3">
+                <Smartphone className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                <h3 className="text-lg font-bold text-success">💡 Tip pro Android</h3>
+              </div>
+              <p className="text-sm text-text-dim ml-8">
+                Použij <strong className="text-text">&ldquo;Rozdělenou obrazovku&rdquo;</strong> -
+                stiskni tlačítko posledních aplikací, klikni na ikonu hry a vyber &ldquo;Rozdělená obrazovka&rdquo;.
+                Navigace nahoře 🗺️, hra dole 🎮
+              </p>
             </div>
 
             {/* Background Info */}
